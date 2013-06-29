@@ -1,11 +1,11 @@
-Lab3
+JokeList
 ====
 
 EE 396 Android Tutorial
 
-Improves the functionality of the Joke Application from Lab 2.
+Improves the functionality of Lab 3.
 
-Features:
+Features from Lab 3:
 <br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  -Custom icons for like and dislike <br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  -Scroll for jokes<br>
