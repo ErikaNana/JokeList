@@ -25,7 +25,7 @@ public class JokeView extends LinearLayout implements OnCheckedChangeListener{
 	
 	/** The data version of this View, containing the joke's information. */
 	private Joke m_joke;
-
+	
 	/**
 	 * Basic Constructor that takes only an application Context.
 	 * 

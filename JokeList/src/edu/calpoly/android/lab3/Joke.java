@@ -19,7 +19,14 @@ public class Joke {
 
 	/** Contains the name of the Author of this joke. */
 	private String m_strAuthorName;
-
+	
+	
+	/** Unique id assigned to the Joke from the Database */
+	private int m_nID;
+	/**
+	 * Figure out which constructors take in m_nID 
+	 */
+	
 	/**
 	 * Initializes with an empty joke and author string and the default rating
 	 * of UNRATED.
@@ -28,6 +35,7 @@ public class Joke {
 		this.m_strJoke = "";
 		this.m_strAuthorName = "";
 		this.m_nRating = Joke.UNRATED;
+		this.m_nID = 0;
 	}
 
 	/**
@@ -44,6 +52,7 @@ public class Joke {
 		this.m_strJoke = strJoke;
 		this.m_strAuthorName = strAuthor;
 		this.m_nRating = Joke.UNRATED;
+		this.m_nID = 0;
 	}
 
 	/**
@@ -62,6 +71,18 @@ public class Joke {
 		this.m_strJoke = strJoke;
 		this.m_strAuthorName = strAuthor;
 		this.m_nRating = nRating;
+		this.m_nID = 0;
+	}
+	
+	/**
+	 * Initializes with a joke, author, rating and id passed in
+	 */
+	
+	public Joke(String strJoke, String strAuthor, int nRating, int nId) {
+		this.m_nID = nId;
+		this.m_nRating = nRating;
+		this.m_strAuthorName = strAuthor;
+		this.m_strJoke = strJoke;
 	}
 
 	/**
@@ -158,6 +179,17 @@ public class Joke {
 					return true;
 				}
 			}
+		}
+		return false;
+	}
+	
+	/**
+	 * New equals method
+	 * Requires that ID values must be equal for to jokes to be equal
+	 */
+	public boolean equals (int id) {
+		if (id == this.m_nID) {
+			return true;
 		}
 		return false;
 	}

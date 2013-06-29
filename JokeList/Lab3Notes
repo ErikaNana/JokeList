@@ -170,10 +170,129 @@ Returns a boolean which specifies whether Android should continue to propagate t
 	-if return false, Android will still call other handlers
 -since long-press events typically do not perform the same action as a regular press,
 better to return true to stop event propagation
+
+Maintaining Application State
+-------------------------------
+-Enables app to maintain basic settings in the event that Activity is destroyed and re-created
+-Maintain UI state across different runs of the app
+
+-the filter value in m_nFilter should be maintained if the Activity is destroyed/recreated
+	-jokeList should be refiltered to display on the jokes specified by m_nFilter
+	-the filter value will be saved as Instance State
+-text in m_vwJokeEditText will be saved and restored across separate runs of programs via the 
+Preferences mechanism
+
+Instance State
+---------------
+-instance state is data that is private to a single instance of an Activity
+-data is not shared across the app or made available to any other instances of the same Activity
+-Instance state can be stored in a Bundle object when the activity becomes inactive/destroyed
+	-Bundle object is saved even though the Activity no longer resides in memory
+	-when Activity becomes inactive
+		-its onSaveInstanceState() method is called
+		-this is where saving of the Instance state happens
+		-only happens when Activity is saved in App History stack not when Activity is
+		closed/finalized
 		
+-Bundle object
+	-map data-structure that uses key-value pairs to store data
+	-type of data that can be stored is limited to basic data types like primitives and strings
+	-can retrieve data from the Bundle object when the Activity is re-created 
+	-the Bundle object containing the instance state can be accessed by overriding two separate
+	methods
+		-the onCreate() method
+		-the onRestoreInstanceState() method
+			-this gets called immediately after the onStart() method
+			-both of these methods take a Bundle argument that contains the instance state if it
+			was previously saved
+			-doesn't get called on the initial creation of the Activity
+			-use this method to restore instance state because has the benefit of logically
+			spreading initialization tasks from restoration tasks
+		-it might not contain anything in the initial creation of the activity
+		
+Life cycle of an Activity
+------------------------
+http://developer.android.com/reference/android/app/Activity.html#ActivityLifecycle
+
+In the following sections
+-------------------------
+-will be persisting the Filtering mechanism as instance state data
+-to start
+	-will save the filter state of AdvancedJokeList Activity in the onSaveInstanceState() method
+	-then restore state in the onRestoreInstanceState() method
+	-more info
+		-http://developer.android.com/guide/appendix/faq/commontasks.html#appstate
+		-http://developer.android.com/reference/android/os/Bundle.html
+		
+onSaveInstanceState(Bundle outState)
+------------------------------------
+-parameters
+	outState = Bundle in which to place your saved state
+	
+-called to retrieve per-instance state from an activity before being killed so that the state
+can be restored in onCreate(Bundle) or onRestoreInstanceState(bundle)
+-called before an activity may be killed so that when it comes back it can restore its state
+-default implementation
+	-takes care of most of the UI per-instance state by calling onSaveInstanceState() on each
+	view in the hierarchy that has an id, and by saving the id of the currently focused view
+		-this is why state of basic UI components is remembered
+		-if don't call super implementation in override, this will not happen
+	-if you override this method to save additional info not captured by each individual
+	view, you will likely want to call through the default implementation
+-if called, this method will occur before onStop()
+-no guarantees about whether it will occur before or after onPause()
+	-onPause() called when an activity is being placed in the background or on its way to
+	destruction
+	-onStop()
+		-called before destruction
+		
+Calling the super version of the method from inside the overridden method
+-------------------------------------------------------------------------
+-means using the original functionality inside the overridden method
+-then you also add your own code in overridden method so that it works like the original method
+and the stuff that you coded
+		
+		
+onRestoreInstanceState(Bundle savedInstanceState)
+----------------------------------------------------
+	-onSaveInstanceState 
+		-the data most recent supplied in onSaveInstanceState(Bundle)
+	-method is called after onStart() when the activity is being reinitialized from a previously
+	saved state, given in savedInstanceState
+	-most implementation will simply use onCreate(Bundle) to restore their state, but sometimes
+	convenient to do it here after all of the initialization has been done or to allow
+	subclasses to decide whether to use default implementation
+	-default implementation
+		-performs a restore of any view state that had previously been frozen by
+		onSaveInstanceState(Bundle)
+	-this method is called between onStart() and onPostCreate(Bundle)
 			
+Restoring Instance Data
+------------------------
+-default implementation of onRestoreInstanceState() will restore the state of any UI component
+that has an id value
+	-this is why when change orientation of device the state of basic UI components is remembered
+	-if fail to call the default super implementation this will not occur
 
-
+Showing Persistent Filtering
+----------------------------
+-make it clear to the app's user that the filter is being preserved
+	-change text on the Filter menu item itself whenever a filter is chosen
+	-done via the onPrepareOptionsMenu() method
+	
+public boolean onPrepareOptionsMenu(Menu menu)
+------------------------------------------------
+-parameter (menu)
+	-the options menu as last shown or first initialized by onCreateOptionsMenu()
+-returns
+	-return true for the menu to be displayed
+	-return false if it will not be shown
+-prepare the Screen's standard options menu to be displayed
+-called right before the menu is shown, every time it is shown
+-can use this method to efficiently enable/disable items or otherwise dynamically modify the 
+contents
+-default implementation updates the system menu items based on the activity's state
+	-deriving classes should always call through to the base class implementation
 
 
 

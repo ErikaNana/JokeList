@@ -59,9 +59,12 @@ public class AdvancedJokeList extends SherlockActivity {
 	protected int m_nLightColor;
 
 	protected int m_nTextColor;
-
+	
+	/** Used to get specific JokeView when list of jokes is long-clicked */
 	protected JokeView current_JokeView;
-		
+	
+	/** Saved Filter Value*/
+	protected static final String SAVED_FILTER_VALUE = "saved_filter_value";
 	/**
 	 * Context-Menu MenuItem IDs.
 	 * IMPORTANT: You must use these when creating your MenuItems or the tests
@@ -75,7 +78,7 @@ public class AdvancedJokeList extends SherlockActivity {
 	protected static final int FILTER_SHOW_ALL = SubMenu.FIRST + 3;
 	
 	//filter value
-	protected int filter = FILTER_UNRATED;
+	protected int filter = FILTER_SHOW_ALL;
 	
 	//implement the ActionMode.Callback
 	protected com.actionbarsherlock.view.ActionMode actionMode;
@@ -94,6 +97,8 @@ public class AdvancedJokeList extends SherlockActivity {
 			inflater.inflate(R.menu.actionmenu, menu);
 			return true;
 		}
+		
+		
 		
 		/**
 		 * Called each time the action mode is shown.  Always called after on CreateAction
@@ -171,6 +176,10 @@ public class AdvancedJokeList extends SherlockActivity {
 			}
 		});
 	}
+	
+	/**
+	 * Initializes everything when app is created.
+	 */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -206,6 +215,10 @@ public class AdvancedJokeList extends SherlockActivity {
 		this.m_vwJokeLayout.setAdapter(m_jokeAdapter);
 	}
 	
+	/**
+	 * Filters the jokes based on the filter selection in the Action Bar and sets the filter
+	 * variable
+	 */
 	@Override
 	public boolean onOptionsItemSelected(com.actionbarsherlock.view.MenuItem item) {
 		switch(item.getItemId()) {
@@ -213,30 +226,53 @@ public class AdvancedJokeList extends SherlockActivity {
 			case R.id.submenu_like:
 				filter = AdvancedJokeList.FILTER_LIKE;
 				//Toast.makeText(this,"like jokes",Toast.LENGTH_SHORT).show();
-				updateFilteredJokes(filter);			
+				updateFilteredJokes(filter);
+				//change menu's text
+				onPrepareOptionsMenu(m_vwMenu);
 				this.m_jokeAdapter.notifyDataSetChanged();				
 				return true;
 
 			case R.id.submenu_dislike:
 				filter = AdvancedJokeList.FILTER_DISLIKE;
-				updateFilteredJokes(filter);			
+				updateFilteredJokes(filter);
+				onPrepareOptionsMenu(m_vwMenu);
 				this.m_jokeAdapter.notifyDataSetChanged();	
 				return true;
 				
 			case R.id.submenu_unrated:
 				filter = AdvancedJokeList.FILTER_UNRATED;
-				updateFilteredJokes(filter);			
+				updateFilteredJokes(filter);	
+				onPrepareOptionsMenu(m_vwMenu);
 				this.m_jokeAdapter.notifyDataSetChanged();	
 				return true;
 				
 			case R.id.submenu_show_all:
 				filter = AdvancedJokeList.FILTER_SHOW_ALL;
 				updateFilteredJokes(filter);
+				onPrepareOptionsMenu(m_vwMenu);
 				this.m_jokeAdapter.notifyDataSetChanged();
 				return true;
 		}
 		return false;
 	};
+	
+	/**
+	 *Restore instance data and override the default implementation 
+	 */
+	@Override
+	protected void onRestoreInstanceState(Bundle savedInstanceState) {
+		//call super version to ensure that other UI state is preserved as well
+		super.onRestoreInstanceState(savedInstanceState);
+		//check to make sure savedInstanceState isn't null
+		assert savedInstanceState != null;
+		//check to make sure saved filter state is in the Bundle
+		assert savedInstanceState.containsKey(SAVED_FILTER_VALUE);
+		//retrieve the value of the filter from savedInstanceState
+		int saved_filter = savedInstanceState.getInt(SAVED_FILTER_VALUE);
+		//re-filter the joke list and notify adapter
+		updateFilteredJokes(saved_filter);			
+		this.m_jokeAdapter.notifyDataSetChanged();	
+	}
 	/**
 	 * Create the filter menu
 	 */
@@ -251,7 +287,16 @@ public class AdvancedJokeList extends SherlockActivity {
         this.m_vwMenu = menu;
         return true;
     }
-
+	/**
+	 * Save the instance data and override default implementation
+	 */
+	@Override
+	 protected void onSaveInstanceState(Bundle outState) {
+		 //store the current value of filter in outState
+		 outState.putInt(AdvancedJokeList.SAVED_FILTER_VALUE, filter);
+		 //call super version of method to ensure that other UI state is preserved as well
+		 super.onSaveInstanceState(outState);
+	 }
 	/**
 	 * Method is used to encapsulate the code that initializes and sets the
 	 * Layout for this Activity.
@@ -278,7 +323,6 @@ public class AdvancedJokeList extends SherlockActivity {
 		
 		m_vwJokeButton.setOnClickListener(new OnClickListener() {
 			  public void onClick(View view) {
-				  Toast.makeText(getBaseContext(), "heard a click", Toast.LENGTH_SHORT).show();
 				  //retrieve text entered by user
 				  String input_text = m_vwJokeEditText.getText().toString();
 				  Joke joke = new Joke(input_text, m_strAuthorName);
@@ -316,6 +360,10 @@ public class AdvancedJokeList extends SherlockActivity {
         });
 	}
 	
+	 /**
+	  * Sets the filtered array of jokes based on the filter passed in.
+	  * @param filter the filter for which the jokes should be filtered by
+	  */
 	protected void updateFilteredJokes (int filter) {
 		//show only filtered jokes and clear the filtered list before starting
 		if (!m_arrFilteredJokeList.isEmpty()) {
@@ -357,6 +405,54 @@ public class AdvancedJokeList extends SherlockActivity {
 		}				
 	}
 	
+	/**
+	 * Returns the proper String of the passed in filter
+	 */
+	protected String getMenuTitleChange() {
+		//get the titles from the resources file
+		Resources resources = this.getResources();
+
+		switch(filter) {
+			case(FILTER_LIKE):{
+				return resources.getString(R.string.like_menuitem);
+			}
+			case(FILTER_DISLIKE):{
+				return resources.getString(R.string.dislike_menuitem);
+			}
+			case(FILTER_UNRATED):{
+				return resources.getString(R.string.unrated_menuitem);
+			}
+			default:{
+				return resources.getString(R.string.show_all_menuitem);
+			}
+		}
+	}
+	
+	/**
+	 * Changes the title text of the Filter menu item
+	 * @param menu	options menu as last shown
+	 */
+	
+	@Override
+	public boolean onPrepareOptionsMenu(Menu menu) {
+		//get filter menu item
+		MenuItem filter = menu.findItem(R.id.menu_filter);
+	
+		//get the name for the action bar based on the current filter
+		String name = getMenuTitleChange();
+		Toast.makeText(getBaseContext(), "current filter name:  " + name, Toast.LENGTH_SHORT).show();
+		//set the title text of the filter
+		filter.setTitle(name);
+		
+		//set the m_vwMenu variable
+		m_vwMenu = menu;
+		
+		//ensure that other menu state is preserved as well
+		super.onPrepareOptionsMenu(menu);
+		
+		//return true so menu is displayed
+		return true;
+	}
 	/**
 	 * Method used for encapsulating the logic necessary to properly add a new
 	 * Joke to m_arrJokeList, and display it on screen.
