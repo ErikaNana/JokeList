@@ -294,11 +294,84 @@ contents
 -default implementation updates the system menu items based on the activity's state
 	-deriving classes should always call through to the base class implementation
 
+SharedPreferences
+------------------
+-The SharedPreferences mechanism operates in a manner similar to saving Instance State in 
+that primitive data is stored in a map of key/value pairs
+-difference
+	-SharedPreference data can be shared across Application components running in the same
+	Context and that the data persists across separate runs of the application
+	-alternatively, can make the SharedPreferences data private to a single instance of an 
+	Activity
+	
+Next section
+------------
+Want to persist the text in m_vwJokeEditText across multiple runs of an Application
+-This allows user to work on a new joke across multiple sessions, and guarantees that if 
+the process is killed for some reason, the user won't lose a joke they were working on
 
+-to start
+	-override the default implementation of onPause() and save data in a private 
+	SharedPreferences object
+	-then retrieve and restore the data in the onCreate() method
+	-saving data in onPause()
+		-guarantees that if your process is killed, the data will still be available in a 
+		subsequent call to onCreate()
+		-this is because onPause() is the earliest point at which an Activity can be killed 
+		by the system
 
+SharedPreferences to save data
+------------------------------
+SharedPreferences class provides a general framework that allows you to save and retrieve
+persistent key-value pairs of primitive data types
+-can use it to save any primitive data
+	-booleans, floats, ints longs, and strings
+	-this data will persist across user sessions (even if your app is killed)
 
+to get a SharedPreferences object, use one of two methods
+	-getSharedPreferences()
+		-use this if you need multiple preferences files identified by name, which you
+		specify with the first parameter
+	-getPreferences()
+		-use this if you need only one preferences file for your Activity
+		-because this will be the only preferences file for Activity, don't need to supply
+		a name
+		
+To write values
+	-call edit() to get a SharedPreferences.Editor
+	-add values with methods such as putBoolean() and putString()
+	-commit the new values with commit()
+	
+To read values
+	-use SharedPreferences methods such as getBoolean() and getString()
+	
+SharedPreferences class
+------------------------
+interface for accessing and modifying preference data returned by getSharedPreferences(String,int)
+-for any particular set of preferences, there is a single instance of this class that all 
+clients share
+-modifications to the preferences must go through an SharedPReferences.Editor object to
+ensure the preference values remain in a consistent state and control when they are 
+committed to storage
+-objects that are returned from the various get methods must be treated as immutable by
+the application
 
-
+public SharedPreferences getPreferences (int mode)
+----------------------------------------------------
+Retrieve a Shared Preferences object for accessing preferences that are private to this
+activity.
+-parameter
+	-mode
+		-operating mode. 
+			-MODE_PRIVATE = default operation
+			-MODE_WORLD_READABLE/MODE_WORLD_WRITEABLE = to control permissions
+returns
+	-the single SharedPreferences instance that can be used to retrieve and modify the 
+	preference values
+-This simply calls the underlying getSharedPreferences(String, int) method by passing in
+this activity's class naem as the preferences name
+	
+	
 
 
 

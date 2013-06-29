@@ -171,7 +171,7 @@ public class Joke {
 	 * @return True if the object passed in is a Joke with the same text and 
 	 * 		   Author as this one; False otherwise.
 	 */
-	@Override
+/*	@Override
 	public boolean equals(Object obj) {
 		if (obj instanceof  Joke) {
 			if (((Joke) obj).getJoke().equals(m_strJoke)) {
@@ -181,7 +181,7 @@ public class Joke {
 			}
 		}
 		return false;
-	}
+	}*/
 	
 	/**
 	 * New equals method

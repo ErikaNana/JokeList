@@ -2,7 +2,10 @@ package edu.calpoly.android.lab3;
 
 import java.util.ArrayList;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.util.Log;
@@ -64,7 +67,7 @@ public class AdvancedJokeList extends SherlockActivity {
 	protected JokeView current_JokeView;
 	
 	/** Saved Filter Value*/
-	protected static final String SAVED_FILTER_VALUE = "saved_filter_value";
+	protected static String SAVED_FILTER_VALUE;
 	/**
 	 * Context-Menu MenuItem IDs.
 	 * IMPORTANT: You must use these when creating your MenuItems or the tests
@@ -79,6 +82,9 @@ public class AdvancedJokeList extends SherlockActivity {
 	
 	//filter value
 	protected int filter = FILTER_SHOW_ALL;
+	
+	/** Key to store text m_vwJokeEditText in SharedPreferences */
+	protected static final String SAVED_EDIT_TEXT = "saved_edit_text";
 	
 	//implement the ActionMode.Callback
 	protected com.actionbarsherlock.view.ActionMode actionMode;
@@ -213,6 +219,16 @@ public class AdvancedJokeList extends SherlockActivity {
 			
 		//set m_vwJokeLayout's adapter to be m_jokeAdapter
 		this.m_vwJokeLayout.setAdapter(m_jokeAdapter);
+		
+		//restoring SharedPreference Data
+		//retrieve the private SharedPreferences belong to this activity
+		SharedPreferences preferences = getPreferences(Activity.MODE_PRIVATE);
+		//retrieve the text that was saved
+		String retrieved_text = preferences.getString(SAVED_EDIT_TEXT, "");
+		Toast.makeText(getBaseContext(), "current text:  " + retrieved_text, Toast.LENGTH_SHORT).show();
+		//set text in m_vwJokeEditText to the text retrieved
+		this.m_vwJokeEditText.setText(retrieved_text);
+		this.m_jokeAdapter.notifyDataSetChanged();	
 	}
 	
 	/**
@@ -359,7 +375,29 @@ public class AdvancedJokeList extends SherlockActivity {
 
         });
 	}
+	/**
+	 * Save data in a private SharedPreferences object
+	 */
+	@Override
+	protected void onPause() {
+		//always call the superclass method first
+		super.onPause();
+		//retrieve the private SharedPreferences belonging to this Activity
+		//idk if this is right
+		SharedPreferences preferences = getPreferences(Activity.MODE_PRIVATE);
 	
+		//create a new Editor for these preferences, through which you can make modifications
+		//to the data in the preferences
+		Editor editor = preferences.edit();
+		
+		//store the text in m_vwJokeEditText in the SharedPreferences
+		String text = this.m_vwJokeEditText.getText().toString();
+		Toast.makeText(getBaseContext(), "current text:  " + text, Toast.LENGTH_SHORT).show();
+		editor.putString(AdvancedJokeList.SAVED_EDIT_TEXT, text);
+		//need to call this to have any changes performed in the Editor show up in the 
+		//Shared preferences
+		editor.commit();
+	}
 	 /**
 	  * Sets the filtered array of jokes based on the filter passed in.
 	  * @param filter the filter for which the jokes should be filtered by
