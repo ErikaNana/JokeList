@@ -840,10 +840,46 @@ What Operations Can Be Performed Through The Content Provider
 JokeDatabaseHelper.java
 ------------------------
 -the content provider will naturally contain a copy of the database
+
+JokeContentProviderjava
+-----------------------
+URIMatcher
+	-class that matches URis passed in to database operation methods and allows for different variations of the same operation
+	to be made at any given time
+	-in object-oriented programming, one of the design patters is the Strategy patter
+	-the URI matcher follows the Strategy pattern very closely
+		-it allows for the same operation to be performed with different algorithms
+	-example
+		-can request a query operation on the database by calling query() from the app 
+			-using URI matcher
+				-can analyze the URI being passed in
+					-the URIMatcher checks for proper, expected URIs
+			-perform query on joke table in two different way susing two different URI forms
+				content://edu.calpoly.android.lab4.contentprovider/joke_table/filters/2
+				content://edu.calpoly.android.lab4.contentprovider/joke_table/jokes/3
+			-assuming URIMatcher recognizes both of these as properly formed URIs
+				-can use switch statement inside of query() method in content provider to catch both
+					-if matches the first URI
+						-can modify query to fetch all table rows that have the rating "Dislike"
+					-if matches second URI
+						-can modify query to instead fetch all table rows that have ID 3
+			-therefore query flexibility
+
+ContentResolvers
+------------------
+Act as event resolvers for any assessors that are working with content providers, such as AdvancedJokeList application
+	-they notify observers of underlying data changes which trigger refreshing
+	-ListView will become an observer because it will eventually use a JokeCursorAdapter
+		-JokeCursorAdapter will bind the ListView to a Cursor
+		-since cursor is attached to the joke table and we are registering application's content resolver to changes made
+		with the given uri (meaning any changes made by the query will set the content resolver off)
+			-any changes made to joke table are automatically resolved in ListView
 			
-
-
-
+Making provider available to application
+----------------------------------------
+Because we are only keeping this content provider local to our application, there are few permission settings to worry about
+-However when making a content provider open to other applications besides the one the provider belongs to, there is a need to
+to worry about permissions
 
 
 

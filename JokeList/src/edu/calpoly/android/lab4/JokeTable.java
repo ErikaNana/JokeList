@@ -18,19 +18,19 @@ import android.util.Log;
 public class JokeTable{
 	/** All static variables */
 	//Joke table name
-	private static final String JOKE_TABLE = "jokes";
+	public static final String JOKE_TABLE = "jokes";
 	
 	//Joke Table Columns names
-	private static final String KEY_ID = "_id";
+	public static final String KEY_ID = "_id";
 	public static final int JOKE_COL_ID = 0;
 	
-	private static final String JOKE_TEXT = "joke_text";
+	public static final String JOKE_TEXT = "joke_text";
 	public static final int JOKE_COL_TEXT = JOKE_COL_ID + 1;
 	
-	private static final String JOKE_RATING = "rating";
+	public static final String JOKE_RATING = "rating";
 	public static final int JOKE_COL_RATING = JOKE_COL_ID + 2;
 	
-	private static final String JOKE_AUTHOR = "author";
+	public static final String JOKE_AUTHOR = "author";
 	public static final int JOKE_COL_AUTHOR = JOKE_COL_ID + 3;
 	
 	//Database creation sql statement

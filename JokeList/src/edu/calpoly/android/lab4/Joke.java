@@ -22,7 +22,7 @@ public class Joke {
 	
 	
 	/** Unique id assigned to the Joke from the Database */
-	private int m_nID;
+	private long m_nID;
 	/**
 	 * Figure out which constructors take in m_nID 
 	 */
@@ -74,17 +74,30 @@ public class Joke {
 		this.m_nID = 0;
 	}
 	
+
 	/**
-	 * Initializes with a joke, author, rating and id passed in
+	 * Initializes with a joke and author string and rating value passed in.
+	 * This constructor should be used when instantiating jokes from database
+	 * tuples.
+	 * 
+	 * @param strJoke
+	 *            Joke String used to initialize the text of this joke.
+	 * 
+	 * @param strAuthor
+	 *            The name of the Author of this Joke.
+	 * 
+	 * @param nRating
+	 *            Rating value to initialize the rating of this joke.
+	 * 
+	 * @param id
+	 * 			  A long representing the unique id for this joke.
 	 */
-	
-	public Joke(String strJoke, String strAuthor, int nRating, int nId) {
-		this.m_nID = nId;
+	public Joke(String strJoke, String strAuthor, int nRating, long id) {
+		this.m_nID = id;
 		this.m_nRating = nRating;
 		this.m_strAuthorName = strAuthor;
 		this.m_strJoke = strJoke;
 	}
-
 	/**
 	 * Accessor for the text of this joke.
 	 * 
@@ -151,45 +164,37 @@ public class Joke {
 	public String toString() {
 		return this.m_strJoke;
 	}
-
+	/**
+	 * Accessor for the unique ID of this joke.
+	 * 
+	 * @return an long set to the unique id of this joke.
+	 */
+	public long getID() {
+		return this.m_nID;
+	}
+	
+	/**
+	 * Mutator that changes the unique id of this joke.
+	 * 
+	 * @param id a long representing the unique id for this joke.
+	 */
+	public void setID(long id) {
+		this.m_nID = id;
+	}
 	/**
 	 * An Object is equal to this Joke if all items below are true:
 	 * 
 	 * 1) The Object is a Joke.
 	 * 
-	 * 2) The Joke's text is the same as this Joke's text. Whereby text equality
-	 *    is defined by String.equals(...).
-	 *    
-	 * 3) the Author of the Joke is the same as this Joke's Author. Whereby
-	 *    equality is defined by String.equals(...).
-	 *    
-	 * The rating is ignored in the determination of equality.
+	 * 2) The Joke's id is the same as this Joke's id.
 	 * 
-	 * @param obj
-	 *            The object to be compared to this Joke object.
-	 * 
-	 * @return True if the object passed in is a Joke with the same text and 
-	 * 		   Author as this one; False otherwise.
+	 * @return True if the object passed in is a Joke with the same id as this one; False otherwise.
 	 */
-/*	@Override
+	@Override
 	public boolean equals(Object obj) {
-		if (obj instanceof  Joke) {
-			if (((Joke) obj).getJoke().equals(m_strJoke)) {
-				if (((Joke) obj).getAuthor().equals(m_strAuthorName)) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}*/
-	
-	/**
-	 * New equals method
-	 * Requires that ID values must be equal for to jokes to be equal
-	 */
-	public boolean equals (int id) {
-		if (id == this.m_nID) {
-			return true;
+		if(obj instanceof Joke) {
+			Joke joke2 = (Joke)obj;
+			return joke2.getID() == this.getID();
 		}
 		return false;
 	}

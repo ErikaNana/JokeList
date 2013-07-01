@@ -85,6 +85,13 @@ public class AdvancedJokeList extends SherlockActivity {
 	//filter value
 	protected int filter = FILTER_SHOW_ALL;
 	
+	/** The String representation of the Show All filter. The Show All case
+	 * needs a String representation of a value that is different from
+	 * Joke.LIKE, Joke.DISLIKE and Joke.UNRATED. The actual value doesn't
+	 * matter as long as it's different, since the WHERE clause is set to
+	 * null when making database operations under this setting. */
+	public static final String SHOW_ALL_FILTER_STRING = "" + FILTER_SHOW_ALL;
+	
 	/** Key to store text m_vwJokeEditText in SharedPreferences */
 	protected static final String SAVED_EDIT_TEXT = "saved_edit_text";
 	
