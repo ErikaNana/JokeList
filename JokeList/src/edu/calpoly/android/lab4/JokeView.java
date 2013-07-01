@@ -1,5 +1,6 @@
-package edu.calpoly.android.lab3;
+package edu.calpoly.android.lab4;
 
+import edu.calpoly.android.lab3.R;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.widget.LinearLayout;

@@ -1,4 +1,4 @@
-package edu.calpoly.android.lab3;
+package edu.calpoly.android.lab4;
 
 /**
  * This class encapsulates the data pertaining to a Joke.

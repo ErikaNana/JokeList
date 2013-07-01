@@ -1,0 +1,877 @@
+Maintaining Application State
+-------------------------------
+-Enables app to maintain basic settings in the event that Activity is destroyed and re-created
+-Maintain UI state across different runs of the app
+
+-the filter value in m_nFilter should be maintained if the Activity is destroyed/recreated
+	-jokeList should be refiltered to display on the jokes specified by m_nFilter
+	-the filter value will be saved as Instance State
+-text in m_vwJokeEditText will be saved and restored across separate runs of programs via the 
+Preferences mechanism
+
+Instance State
+---------------
+-instance state is data that is private to a single instance of an Activity
+-data is not shared across the app or made available to any other instances of the same Activity
+-Instance state can be stored in a Bundle object when the activity becomes inactive/destroyed
+	-Bundle object is saved even though the Activity no longer resides in memory
+	-when Activity becomes inactive
+		-its onSaveInstanceState() method is called
+		-this is where saving of the Instance state happens
+		-only happens when Activity is saved in App History stack not when Activity is
+		closed/finalized
+		
+-Bundle object
+	-map data-structure that uses key-value pairs to store data
+	-type of data that can be stored is limited to basic data types like primitives and strings
+	-can retrieve data from the Bundle object when the Activity is re-created 
+	-the Bundle object containing the instance state can be accessed by overriding two separate
+	methods
+		-the onCreate() method
+		-the onRestoreInstanceState() method
+			-this gets called immediately after the onStart() method
+			-both of these methods take a Bundle argument that contains the instance state if it
+			was previously saved
+			-doesn't get called on the initial creation of the Activity
+			-use this method to restore instance state because has the benefit of logically
+			spreading initialization tasks from restoration tasks
+		-it might not contain anything in the initial creation of the activity
+		
+Life cycle of an Activity
+------------------------
+http://developer.android.com/reference/android/app/Activity.html#ActivityLifecycle
+
+In the following sections
+-------------------------
+-will be persisting the Filtering mechanism as instance state data
+-to start
+	-will save the filter state of AdvancedJokeList Activity in the onSaveInstanceState() method
+	-then restore state in the onRestoreInstanceState() method
+	-more info
+		-http://developer.android.com/guide/appendix/faq/commontasks.html#appstate
+		-http://developer.android.com/reference/android/os/Bundle.html
+		
+onSaveInstanceState(Bundle outState)
+------------------------------------
+-parameters
+	outState = Bundle in which to place your saved state
+	
+-called to retrieve per-instance state from an activity before being killed so that the state
+can be restored in onCreate(Bundle) or onRestoreInstanceState(bundle)
+-called before an activity may be killed so that when it comes back it can restore its state
+-default implementation
+	-takes care of most of the UI per-instance state by calling onSaveInstanceState() on each
+	view in the hierarchy that has an id, and by saving the id of the currently focused view
+		-this is why state of basic UI components is remembered
+		-if don't call super implementation in override, this will not happen
+	-if you override this method to save additional info not captured by each individual
+	view, you will likely want to call through the default implementation
+-if called, this method will occur before onStop()
+-no guarantees about whether it will occur before or after onPause()
+	-onPause() called when an activity is being placed in the background or on its way to
+	destruction
+	-onStop()
+		-called before destruction
+		
+Calling the super version of the method from inside the overridden method
+-------------------------------------------------------------------------
+-means using the original functionality inside the overridden method
+-then you also add your own code in overridden method so that it works like the original method
+and the stuff that you coded
+		
+		
+onRestoreInstanceState(Bundle savedInstanceState)
+----------------------------------------------------
+	-onSaveInstanceState 
+		-the data most recent supplied in onSaveInstanceState(Bundle)
+	-method is called after onStart() when the activity is being reinitialized from a previously
+	saved state, given in savedInstanceState
+	-most implementation will simply use onCreate(Bundle) to restore their state, but sometimes
+	convenient to do it here after all of the initialization has been done or to allow
+	subclasses to decide whether to use default implementation
+	-default implementation
+		-performs a restore of any view state that had previously been frozen by
+		onSaveInstanceState(Bundle)
+	-this method is called between onStart() and onPostCreate(Bundle)
+			
+Restoring Instance Data
+------------------------
+-default implementation of onRestoreInstanceState() will restore the state of any UI component
+that has an id value
+	-this is why when change orientation of device the state of basic UI components is remembered
+	-if fail to call the default super implementation this will not occur
+
+Showing Persistent Filtering
+----------------------------
+-make it clear to the app's user that the filter is being preserved
+	-change text on the Filter menu item itself whenever a filter is chosen
+	-done via the onPrepareOptionsMenu() method
+	
+public boolean onPrepareOptionsMenu(Menu menu)
+------------------------------------------------
+-parameter (menu)
+	-the options menu as last shown or first initialized by onCreateOptionsMenu()
+-returns
+	-return true for the menu to be displayed
+	-return false if it will not be shown
+-prepare the Screen's standard options menu to be displayed
+-called right before the menu is shown, every time it is shown
+-can use this method to efficiently enable/disable items or otherwise dynamically modify the 
+contents
+-default implementation updates the system menu items based on the activity's state
+	-deriving classes should always call through to the base class implementation
+
+SharedPreferences
+------------------
+-The SharedPreferences mechanism operates in a manner similar to saving Instance State in 
+that primitive data is stored in a map of key/value pairs
+-difference
+	-SharedPreference data can be shared across Application components running in the same
+	Context and that the data persists across separate runs of the application
+	-alternatively, can make the SharedPreferences data private to a single instance of an 
+	Activity
+	
+Next section
+------------
+Want to persist the text in m_vwJokeEditText across multiple runs of an Application
+-This allows user to work on a new joke across multiple sessions, and guarantees that if 
+the process is killed for some reason, the user won't lose a joke they were working on
+
+-to start
+	-override the default implementation of onPause() and save data in a private 
+	SharedPreferences object
+	-then retrieve and restore the data in the onCreate() method
+	-saving data in onPause()
+		-guarantees that if your process is killed, the data will still be available in a 
+		subsequent call to onCreate()
+		-this is because onPause() is the earliest point at which an Activity can be killed 
+		by the system
+
+SharedPreferences to save data
+------------------------------
+SharedPreferences class provides a general framework that allows you to save and retrieve
+persistent key-value pairs of primitive data types
+-can use it to save any primitive data
+	-booleans, floats, ints longs, and strings
+	-this data will persist across user sessions (even if your app is killed)
+
+to get a SharedPreferences object, use one of two methods
+	-getSharedPreferences()
+		-use this if you need multiple preferences files identified by name, which you
+		specify with the first parameter
+	-getPreferences()
+		-use this if you need only one preferences file for your Activity
+		-because this will be the only preferences file for Activity, don't need to supply
+		a name
+		
+To write values
+	-call edit() to get a SharedPreferences.Editor
+	-add values with methods such as putBoolean() and putString()
+	-commit the new values with commit()
+	
+To read values
+	-use SharedPreferences methods such as getBoolean() and getString()
+	
+SharedPreferences class
+------------------------
+interface for accessing and modifying preference data returned by getSharedPreferences(String,int)
+-for any particular set of preferences, there is a single instance of this class that all 
+clients share
+-modifications to the preferences must go through an SharedPReferences.Editor object to
+ensure the preference values remain in a consistent state and control when they are 
+committed to storage
+-objects that are returned from the various get methods must be treated as immutable by
+the application
+
+public SharedPreferences getPreferences (int mode)
+----------------------------------------------------
+Retrieve a Shared Preferences object for accessing preferences that are private to this
+activity.
+-parameter
+	-mode
+		-operating mode. 
+			-MODE_PRIVATE = default operation
+			-MODE_WORLD_READABLE/MODE_WORLD_WRITEABLE = to control permissions
+returns
+	-the single SharedPreferences instance that can be used to retrieve and modify the 
+	preference values
+-This simply calls the underlying getSharedPreferences(String, int) method by passing in
+this activity's class name as the preferences name
+
+Content Providers
+-----------------
+-will work way from creating the SQLite database inside of a content provider to creating
+the adapter that facilitates between our content provider and our ListView, to reworking
+the ListView itself
+
+Android Content Providers
+--------------------------
+-Content providers manage access to a structured set of data
+-they encapsulate the data
+-provide mechanisms for defining data security
+-content providers are the standard interface that connects data in one process with code 
+running in another process
+
+-when you want to access data in content provider
+	-use ContentResolver object in app's Context to communicate with the provider as a client
+	-the ContentResolver object
+		-communicates with the provider object
+			-provider object = instance of a class that implements ContentProvider
+				-receives data requests from clients
+				-performs the request action
+				-returns the results
+				
+-don't need to develop your own provider if you don't intend to share your data with other apps
+
+-need your own provider if:
+	-provide custom search suggestions in own app
+	-if want to copy and paste complex data or files from your app to other apps
+	
+Content Provider Basics
+-----------------------
+-a content provider manages access to a central repository of data
+-A provider is part of an Android application, which often provides its own UI for working
+with the data
+-Content providers
+	-primarily intended to be used by other applications, which access the provider using a 
+	provider client object
+-together providers and provider clients offer a consistent, standard interface to data that
+also handles inter-process communication and secure data access
+	
+Overview
+---------
+-a content provider presents data to external applications as one or more tables that are 
+similar to the tables found in a relational database
+-row
+	-represents an instance of some time of data the provider collects
+-column
+	-represents an individual piece of data collected for an instance
+	
+example: user dictionary table
+
+word			app id	frequency	locale		_ID				row = represents instance
+-----------------------------------------------------				  of a word
+mapreduce		user1		100		en_US		 1
+precompiler		user14		200		fr_FR		 2
+applet			user2		225		fr_CA		 3				column = represents some data
+const			user1		255		pt_BR		 4						 for that word
+int				user5		100		en_UK		 5	
+
+-to refer to a row's locale = refer to its locale column
+-for this provider, the _ID column serves as a "primary key" column that the provider 
+automatically maintains
+
+Note
+----- 
+A provider isn't required to have a primary key, and it isn't required to use _ID as
+the column name of a primary key if one is present
+	-if you want to bind data from a provider to a ListView, one of the column names has to 
+	be _ID
+	
+Accessing a provider
+--------------------
+-app accesses the data from a content provider with ContentResolver client object
+	-this object has methods that call identically-named methods in provider object
+		-provider object = instance of one of the concrete subclasses of ContentProvider
+	-ContentResolver methods
+		-provide the basic create, retrieve, update and delete functions of persistent storage
+
+ContentResolver object (in the client app's process)
+ContentProvider object (in the application that owns the provider)
+	-these two automatically handle inter-process communication
+ContentProvider
+	-also acts as an abstraction layer between its repository of data and the external 
+	appearance of data as tables
+	
+Note
+-----
+	to access a provider, application has to request specific permissions in its manifest file
+	
+Example
+-------
+to get a list of the words from their locales from the User Dictionary Provider
+	-call ContentResolver.query()
+		-query() method calls the ContentProvider.query() method defined by the User
+		Dictionary Provider
+
+/////////////////////////////////////////////////////////////////////////////////////		
+//Queries the user dictionary and returns results
+mCursor = getContentResolver.query(
+	UserDictionary.Words.CONTENT_URI 	//The content URI of the words table
+	mProjection,						//The columns to return for each row
+	mSelectionClasue					//Selection criteria
+	mSelectionArgs,						//Selection criteria
+	mSortOrder);						//The sort order for the returned rows
+//////////////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+public final Cursor query (Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder)
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+For best performance, the caller should follow these guidelines:
+
+Provide an explicit projection, to prevent reading data from storage that aren't going to be used.
+Use question mark parameter markers such as 'phone=?' instead of explicit values in the selection parameter, so that queries that differ
+only by those values will be recognized as the same for caching purposes.
+
+Parameters
+----------
+uri	
+	-The URI, using the content:// scheme, for the content to retrieve.
+projection	
+	-A list of which columns to return. Passing null will return all columns, which is inefficient.
+selection	
+	-A filter declaring which rows to return, formatted as an SQL WHERE clause (excluding the WHERE itself). Passing null will return all rows for the given URI.
+selectionArgs	
+	-You may include ?s in selection, which will be replaced by the values from selectionArgs, in the order that they appear in the selection. The values will be bound as Strings.
+sortOrder	
+	-How to order the rows, formatted as an SQL ORDER BY clause (excluding the ORDER BY itself). Passing null will use the default sort order, which may be unordered.
+
+Returns
+-------
+	-A Cursor object, which is positioned before the first entry, or null
+	
+Content URIs
+------------
+A content URI is a URI that identifies data in a provider
+	-include symbolic name of the entire provider (its authority)
+	-name that points to a table (a path)
+	-when you call a client method to access a table in a provider, the content URI for the table is one of the arguments
+	
+CONTENT_URI = in the above code contains the content URI of the user dictionary's "words" table
+
+ContentResolver object
+	-parses out the URI's authority
+	-uses it to "resolve" the provider by comparing the authority to a system table of known providers
+	-then can dispatch the query arguments to the correct provider
+
+ContentProvider object
+	-uses the path part of the content URI to choose the table to access
+	-A provider usually has a path for each table it exposes
+	
+The full URI of the previous code (URI for the "words" table)
+	-content://user_dictionary/words
+		-user_dictionary = provider's authority
+		-words = table's path	-content:// = the scheme, is always present and identifies this as a content URI
+
+Many providers allow you to access a single row in a table by appending an ID value to the end of the URI
+	example: retrieve a row whose _ID is 4 from user dictionary
+		-content URI
+			URI singleUri = ContentUris.withAppendedId(UserDictionary.Words.CONTENT_URI,4);
+	-often use id values when you've retrieved a set of rows and then want to update or delete one of them	
+	-Uri and Uri.Builder classes contain convenience methods for construction well-formed Uri objects from strings
+		-ContentUris contains convenience methods for appending id values to a URI
+	
+Constructing the query
+---------------------
+Example:
+
+///////////////////////////////////////////////////////////////////////////////////////////
+// A "projection" defines the columns that will be returned for each row
+String[] mProjection =
+{
+    UserDictionary.Words._ID,    // Contract class constant for the _ID column name
+    UserDictionary.Words.WORD,   // Contract class constant for the word column name
+    UserDictionary.Words.LOCALE  // Contract class constant for the locale column name
+};
+
+// Defines a string to contain the selection clause
+String mSelectionClause = null;
+
+// Initializes an array to contain selection arguments
+String[] mSelectionArgs = {""};
+
+///////////////////////////////////////////////////////////////////////////////////////////
+
+
+Provider client query is similar to an SQL query
+	-contains a set of columns to return
+	- a set of selection criteria
+	-a sort order	
+projection
+	-the set of columns that the query should return (mProjection)
+	
+replaceable parameter = ?
+	-if specify this instead of a value, the query method retrieves the value from the selection arguments array
+		-mSelectionArgs
+	-use this instead of variable concatenation (protects agains SQL injection)
+		
+-the expression that specifies the rows to retrieve is split into a selection clause and selection arguments
+	-selection clauses
+		-combination of logical and Boolean expressions, column names, and values (mSelectionClause)
+		
+Code: 
+	-if user doesn't enter a word, the selection clause is set to null, query returns all the words in the provider
+	-if user enters a words, selection clauses is set to UserDictionary.Words.WORD + " = ?" and the first element
+	of selection arguments array is set to the word the user enters
+
+This query is analogous to the SQL statement:
+
+SELECT _ID, word, locale FROM words WHERE word = <userinput> ORDER BY word ASC;
+In this SQL statement, the actual column names are used instead of contract class constants.
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+/*
+ * This defines a one-element String array to contain the selection argument.
+ */
+String[] mSelectionArgs = {""};
+
+// Gets a word from the UI
+mSearchString = mSearchWord.getText().toString();
+
+// Remember to insert code here to check for invalid or malicious input.
+
+// If the word is the empty string, gets everything
+if (TextUtils.isEmpty(mSearchString)) {
+    // Setting the selection clause to null will return all words
+    mSelectionClause = null;
+    mSelectionArgs[0] = "";
+
+} else {
+    // Constructs a selection clause that matches the word that the user entered.
+    mSelectionClause = UserDictionary.Words.WORD + " = ?";
+
+    // Moves the user's input string to the selection arguments.
+    mSelectionArgs[0] = mSearchString;
+
+}
+
+// Does a query against the table and returns a Cursor object
+mCursor = getContentResolver().query(
+    UserDictionary.Words.CONTENT_URI,  // The content URI of the words table
+    mProjection,                       // The columns to return for each row
+    mSelectionClause                   // Either null, or the word the user entered
+    mSelectionArgs,                    // Either empty, or the string the user entered
+    mSortOrder);                       // The sort order for the returned rows
+
+// Some providers return null if an error occurs, others throw an exception
+if (null == mCursor) {
+    /*
+     * Insert code here to handle the error. Be sure not to use the cursor! You may want to
+     * call android.util.Log.e() to log this error.
+     *
+     */
+// If the Cursor is empty, the provider found no matches
+} else if (mCursor.getCount() < 1) {
+
+    /*
+     * Insert code here to notify the user that the search was unsuccessful. This isn't necessarily
+     * an error. You may want to offer the user the option to insert a new row, or re-type the
+     * search term.
+     */
+
+} else {
+    // Insert code here to do something with the results
+
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+
+Displaying query results
+--------------------------
+ContentResolver.query() client method always returns a Cursor
+	-Cursor
+		-contains the columns specified by by the query's projection for the rows that match the query's selection criteria
+		-provides random read access to the rows and columns it contains
+		-using Cursor methods
+			-can iterate over rows in the results
+			-determine the data type of each column
+			-get the data out of a column
+			-examine other properties of the results
+			-some Cursor implementations automatically update the object when the provider's data changes,
+			or trigger methods in an observer object when the Cursor changes, or both
+		-if no rows match the selection criteria, the provider returns a Cursor object for which Cursor.getCount() is 0 (empty cursor)
+		-if an internal error occurs, the results of the query depend on the particular provider
+			-it may choose to return null or may throw an Exception
+		-is a list of rows
+			-good way to display the contents of a Cursor is to link it to a ListView via a SimpleCursorAdapter
+			
+Code: 
+	-continues code from before
+	-creates a SimpleCursorAdapter object containing the Cursor retrieved by the query
+	-sets this object to be the adapter for a ListView
+	
+	
+/////////////////////////////////////////////////////////////////////////////////////	
+// Defines a list of columns to retrieve from the Cursor and load into an output row
+String[] mWordListColumns =
+{
+    UserDictionary.Words.WORD,   // Contract class constant containing the word column name
+    UserDictionary.Words.LOCALE  // Contract class constant containing the locale column name
+};
+
+// Defines a list of View IDs that will receive the Cursor columns for each row
+int[] mWordListItems = { R.id.dictWord, R.id.locale};
+
+// Creates a new SimpleCursorAdapter
+mCursorAdapter = new SimpleCursorAdapter(
+    getApplicationContext(),               // The application's Context object
+    R.layout.wordlistrow,                  // A layout in XML for one row in the ListView
+    mCursor,                               // The result from the query
+    mWordListColumns,                      // A string array of column names in the cursor
+    mWordListItems,                        // An integer array of view IDs in the row layout
+    0);                                    // Flags (usually none are needed)
+
+// Sets the adapter for the ListView
+mWordList.setAdapter(mCursorAdapter);
+///////////////////////////////////////////////////////////////////////////////////////////
+
+Note
+----
+-To back a ListView with a Cursor, the cursor must contain a column named _ID.  Because of this, the query shown
+previously retrieves the _ID column for the "words" table, even though the ListView doesn't display it
+-This restriction also explains why most providers have a _ID column for each of their tables
+
+Getting Data from Query Results
+-------------------------------
+-can use query results to use them for other tasks
+-can retrieve spellings from the user dictionary and look them up in other providers
+-iterate over the rows in the Cursor
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+// Determine the column index of the column named "word"
+int index = mCursor.getColumnIndex(UserDictionary.Words.WORD);
+
+/*
+ * Only executes if the cursor is valid. The User Dictionary Provider returns null if
+ * an internal error occurs. Other providers may throw an Exception instead of returning null.
+ */
+
+if (mCursor != null) {
+    /*
+     * Moves to the next row in the cursor. Before the first movement in the cursor, the
+     * "row pointer" is -1, and if you try to retrieve data at that position you will get an
+     * exception.
+     */
+    while (mCursor.moveToNext()) {
+
+        // Gets the value from the column.
+        newWord = mCursor.getString(index);
+
+        // Insert code here to process the retrieved word.
+
+        ...
+
+        // end of while loop
+    }
+} else {
+
+    // Insert code here to report an error if the cursor is null or the provider threw an exception.
+}
+///////////////////////////////////////////////////////////////////////////////////////////////////		 
+
+Cursor implementations
+	-contain several "get" methods for retrieving different types of data from the object
+	-example, snippet uses getString(index)
+	-they also have a getType() method that returns a value indicating the data type of the column
+	
+Content Provider Permissions
+----------------------------
+A provider's app can specify permissions that other apps must have in order to access the provider's data
+-permissions ensure that the user knows what data an app will try to access
+-based on provider's requirements, other apps request the permissions they need in order to access the provider
+-end users see the requested permissions when they install the app
+
+-if a provider's app doesn't specify any permissions, then other apps have no access to the provider's data
+	-however components in the provider's app always have full read and write access regardless of specified permissions
+
+-the User Dictionary Provider requires the android.permission.READ_USER_DICTIONARY permission to retrieve the data from it
+-the provider has the separate android.permission.WRITE_USER_DICTIONARY permission for inserting, updating or deleting data
+
+-to get the permissions needed to access a provider
+	-app request them with a <uses-permission> element in its manifest file
+	-when Android Package Manager installs the app, a user must approve all of the permissions in app requests
+		-if user approves all of them, Package Manager continues the installation
+		-if user doesn't approve them, Package Manager aborts the install
+		
+-example of <uses-permission> element requests read access to the User Dictionary Provider
+
+////////////////////////////////////////////////////////////////////////
+<uses-permission android:name="android.permission.READ_USER_DICTIONARY">
+////////////////////////////////////////////////////////////////////////
+
+
+Inserting/Updating/Deleting Data
+--------------------------------
+-use interaction between a provider client and the provider's ContentProvider to modify data
+-call method of ContentResolver with arguments that are passed to the corresponding method of ContentProvider
+-provider and provider client automatically handle security and inter-process communication
+
+Inserting Data
+--------------
+-call ContentResolver.insert() method
+	-inserts a new row into the provider and returns a content URI for that row
+	
+code:
+	-insert a new word into the User Dictionary Provider
+
+////////////////////////////////////////////////////////////////////////	
+// Defines a new Uri object that receives the result of the insertion
+Uri mNewUri;
+
+...
+
+// Defines an object to contain the new values to insert
+ContentValues mNewValues = new ContentValues();
+
+/*
+ * Sets the values of each column and inserts the word. The arguments to the "put"
+ * method are "column name" and "value"
+ */
+mNewValues.put(UserDictionary.Words.APP_ID, "example.user");
+mNewValues.put(UserDictionary.Words.LOCALE, "en_US");
+mNewValues.put(UserDictionary.Words.WORD, "insert");
+mNewValues.put(UserDictionary.Words.FREQUENCY, "100");
+
+mNewUri = getContentResolver().insert(
+    UserDictionary.Word.CONTENT_URI,   // the user dictionary content URI
+    mNewValues                          // the values to insert
+);
+//////////////////////////////////////////////////////////////////////////
+
+data for new row
+	-goes into a single ContentValues object (similar in form to a one-row cursor)
+	-columns in object don't need to have the same data type
+		-if you don't want to specify a value at all, can set a column to null
+			-ContentValues.putNull()
+-snippet doesn't add the _ID column, because this column is maintained automatically
+-the provider assigns a unique value of _ID to every row that is added
+	-providers usually use this value as the table's primary key
+-content URI returned in newUri identifies the newly-added row, with the format
+	content://user_dictionary/words/<id_value>
+		-<id_value> = contents of _ID for new row
+			-most providers can detect this form of content URI automatically and then perform the requested operation on that 
+			particular row
+-to get the value of _ID from the returned Uri, call ContentUris.parseId()
+
+
+Updating Data
+---------------
+-use a ContentValues object with the updated values
+-selection criteria
+-client method = ContentResolver.update()
+-only need to add values to the ContentValues object for columns that you are updating
+-if want to clear contents of a column, set the value to null
+
+code:
+	-changes all the rows whose locale has the language "en" to have a locale of null
+	-the return value is the number of rows that were updated
+
+///////////////////////////////////////////////////////////////////////////////
+// Defines an object to contain the updated values
+ContentValues mUpdateValues = new ContentValues();
+
+// Defines selection criteria for the rows you want to update
+String mSelectionClause = UserDictionary.Words.LOCALE +  "LIKE ?";
+String[] mSelectionArgs = {"en_%"};
+
+// Defines a variable to contain the number of updated rows
+int mRowsUpdated = 0;
+
+...
+
+/*
+ * Sets the updated value and updates the selected words.
+ */
+mUpdateValues.putNull(UserDictionary.Words.LOCALE);
+
+mRowsUpdated = getContentResolver().update(
+    UserDictionary.Words.CONTENT_URI,   // the user dictionary content URI
+    mUpdateValues                       // the columns to update
+    mSelectionClause                    // the column to select on
+    mSelectionArgs                      // the value to compare to
+);
+
+//////////////////////////////////////////////////////////////////////////
+
+- sanitize user input when you call ContentResolver.update()
+	-use the ? parameter
+
+Deleting Data
+--------------
+-specify criteria for rows want to delete
+-client method returns the number of deleted rows
+
+code:
+	-deletes rows whose appid matches "user"
+	-method returns the number of deleted rows
+
+//////////////////////////////////////////////////////////////////////
+// Defines selection criteria for the rows you want to delete
+String mSelectionClause = UserDictionary.Words.APP_ID + " LIKE ?";
+String[] mSelectionArgs = {"user"};
+
+// Defines a variable to contain the number of rows deleted
+int mRowsDeleted = 0;
+
+...
+
+// Deletes the words that match the selection criteria
+mRowsDeleted = getContentResolver().delete(
+    UserDictionary.Words.CONTENT_URI,   // the user dictionary content URI
+    mSelectionClause                    // the column to select on
+    mSelectionArgs                      // the value to compare to
+);
+//////////////////////////////////////////////////////////////////////////
+
+- sanitize user input when you call ContentResolver.delete()
+	-use the ? parameter
+
+
+What are Content Providers?
+-----------------------------
+-it is not a database
+	-it is an organized representation of one
+-database
+	-entity that apps want info out of
+-content provider
+	-acts as the abstract layer between the database and the app
+		-like how Adapter acts like glue between a View and underlying data
+-we will be wrapping a database inside of a content provider interface so that we may achieve a single compound entity that both contains data
+and provides access to it
+	-our lab app is the accessor in this case
+-content providers expose the data from a data source using tables
+
+example of content provider table you will be creating
+------------------------------------------------------
+
+_ID			joke_text		  rating	author
+------------------------------------------------
+1		A really lame joke		0		jsmith
+2		A slightly lame joke	2		jsmith
+3		A hilarious pun			1		jsmith
+4		A sightly funny joke	0		jsmith
+5		A joke you make often	1		jsmith
+6		A joke you hate			2		jsmith
+
+row
+	-contains all joke field
+		-0 unrated
+		-1 like
+		-2 Dislike
+	
+joke table serves as the content provider's organized source of data pulled from the database and is kept up to date through a set
+of operations that may be executed on the database
+
+-we will store our joke data in a database
+	-database will be inside of content provider
+	-content provider will expose the database's data in an organized table to our app
+	-app will have access to create, modify, and obtain the data exposed by the content provider
+	-content provider will handle any modifications requested by our app and update the database accordingly
+
+
+The SQLite Database
+--------------------
+Content URI (URI)
+	-special code that is required when trying to perform an operation through a content provider
+	-example
+		content://edu.calpoly.android.lab4.contentprovider/joke_table/filters/1
+		content://edu.calpoly.android.lab4.contentprovider/joke_table/jokes/5
+	-URI
+		-contains two important pieces
+			-address to the content provider
+			-statement with a specific intent that is parsed by the content provider using URIMatcher
+		-all content URIs in Android are formatted using the "content" scheme (content://)
+	-In the URIs above
+		-edu.calpoly.android.lab4.contentprovider = authority
+			-fancy term for "match me with the content provider at this location"
+				-in the lab we will implement own content provider
+		-everything else that follows the authority = path
+			-the next part of the path is joke_table
+				-this part means "this is the table I'm trying to access"
+				-since content provider will only have one table, it makes sense to point to it when trying to do anything with it
+		-remainder of the paths
+			-basically keys for operations we wish to perform
+			-these can be whatever we want them to be
+			-when they are passed to the operations they must be expected
+				-filters/1
+					-indicates that we want to include the Like filter on our operation since Joke.LIKE has value of 1
+				-jokes/5
+					-indicates that we want to include the 5th joke in the table on our operation
+		-using URIs, we can specify different behavior within the same operation
+		-note:
+			-we need to have two separate paths for filters and jokes is because both of them refer to numbers
+			-if they were left just as numbers (1 and 5) there would be no way to differentiate them from joke IDs
+
+What Operations Can Be Performed Through The Content Provider
+--------------------------------------------------------------
+-the content provider will provide four operations that may be performed on data from the database
+	-query
+	-insert
+	-delete
+	-update
+		-these are operations that we will implement in our JokeContentProvider class as methods
+
+-Query
+	-given a URI containing a numerical Joke filter and conditions for which rows to fetch
+		-the content provider returns a cursor
+			-cursor contains a list of rows that match the conditions specified
+			-example:
+				-given the table above, a query made for jokes that have a rating of 0 would return a cursor
+				object which contains two rows
+					-the row with ID 1
+					-the row with ID 4
+-Insert
+	-given a URI containing a Joke ID and list of values
+		-the content provider
+			-inserts a new object into the database
+				-the inserted object appears as a new row at the bottom of the table
+				-populating the row's columns with the list of values passed in
+				-then the content provider returns the ID of the newly inserted row
+				-don't need to worry about passing in a proper ID for insertion because we will create the database
+				with a statement that will automate the ID assignment system for us
+			-updates the table with the new information
+			
+-Delete
+	-Given a URI that contains a Joke ID
+		-the content provider locates a row in the table with a matching ID and purges it from both the table
+		and the database
+	-content provider then returns the number of rows that were delete (in our case, only one row will be deleted per operation)
+
+-Update
+	-Given a URI that contains a Joke ID and a list of values
+		-the content provider 
+			-searches for a row with the matching ID 
+			-updates that row's columns with the passed-in values
+			-returns the number of rows that were updated
+				-in our case, only one row will be updated per operation
+				
+JokeDatabaseHelper.java
+------------------------
+-the content provider will naturally contain a copy of the database
+			
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

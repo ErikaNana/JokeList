@@ -2,7 +2,7 @@ package edu.calpoly.android.lab3.tests;
 
 import junit.framework.TestCase;
 import android.test.suitebuilder.annotation.SmallTest;
-import edu.calpoly.android.lab3.Joke;
+import edu.calpoly.android.lab4.Joke;
 
 public class JokeTest extends TestCase {
 

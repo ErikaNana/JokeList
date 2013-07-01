@@ -11,10 +11,10 @@ import android.widget.EditText;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.RadioButton;
-import edu.calpoly.android.lab3.Joke;
-import edu.calpoly.android.lab3.AdvancedJokeList;
-import edu.calpoly.android.lab3.JokeView;
 import edu.calpoly.android.lab3.R;
+import edu.calpoly.android.lab4.AdvancedJokeList;
+import edu.calpoly.android.lab4.Joke;
+import edu.calpoly.android.lab4.JokeView;
 
 public class AdvancedJokeListTest2 extends ActivityInstrumentationTestCase2<AdvancedJokeList> {
 	public AdvancedJokeListTest2() {

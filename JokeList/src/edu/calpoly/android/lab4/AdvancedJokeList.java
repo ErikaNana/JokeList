@@ -1,4 +1,4 @@
-package edu.calpoly.android.lab3;
+package edu.calpoly.android.lab4;
 
 import java.util.ArrayList;
 
@@ -27,6 +27,8 @@ import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 import com.actionbarsherlock.view.SubMenu;
+
+import edu.calpoly.android.lab3.R;
 
 
 public class AdvancedJokeList extends SherlockActivity {

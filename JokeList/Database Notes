@@ -1,0 +1,34 @@
+ID column
+---------
+-in many tables, the ID column represents the primary key
+-the primary key is the key that uniquely identifies the row entry object
+-when designing an SL table, specify the primary key as an integer and mark it as
+auto-incrementable: this way every inserted row is guaranteed to have a unique primary key
+
+Not null constraint
+-------------------
+A column with a NOT NULL constraint cannot have NULL values
+
+Creating a table
+-------------------
+To create a table, we give a name to a table and to its columns. Each column can have one of these data types:
+
+NULL - The value is a NULL value
+INTEGER - a signed integer
+REAL - a floating point value
+TEXT - a text string
+BLOB - a blob of data
+
+example:
+sqlite> CREATE TABLE COMPANY(
+   ID INT PRIMARY KEY     NOT NULL,
+   NAME           TEXT    NOT NULL,
+   AGE            INT     NOT NULL,
+   ADDRESS        CHAR(50),
+   SALARY         REAL
+);
+
+Drop Table
+---------
+Drop Table statement is used to remove a table definition and all associated data, indexes, triggers, constraints and permission
+specifications for that table

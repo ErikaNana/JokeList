@@ -14,7 +14,7 @@
         android:theme="@style/Theme.Sherlock.Light.DarkActionBar" >
     	<uses-library android:name="android.test.runner" />
 		<activity
-            android:name=".AdvancedJokeList"
+            android:name="edu.calpoly.android.lab4.AdvancedJokeList"
             android:label="@string/title_activity_main" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

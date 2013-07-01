@@ -14,11 +14,11 @@ import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 import com.actionbarsherlock.view.SubMenu;
 
-import edu.calpoly.android.lab3.AdvancedJokeList;
-import edu.calpoly.android.lab3.Joke;
-import edu.calpoly.android.lab3.JokeListAdapter;
-import edu.calpoly.android.lab3.JokeView;
 import edu.calpoly.android.lab3.R;
+import edu.calpoly.android.lab4.AdvancedJokeList;
+import edu.calpoly.android.lab4.Joke;
+import edu.calpoly.android.lab4.JokeListAdapter;
+import edu.calpoly.android.lab4.JokeView;
 
 public class AdvancedJokeListAddFilterDeleteTest extends ActivityInstrumentationTestCase2<AdvancedJokeList> {
 	

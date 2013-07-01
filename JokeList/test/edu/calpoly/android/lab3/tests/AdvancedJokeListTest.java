@@ -10,9 +10,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import edu.calpoly.android.lab3.AdvancedJokeList;
-import edu.calpoly.android.lab3.Joke;
-import edu.calpoly.android.lab3.JokeView;
+import edu.calpoly.android.lab4.AdvancedJokeList;
+import edu.calpoly.android.lab4.Joke;
+import edu.calpoly.android.lab4.JokeView;
 
 public class AdvancedJokeListTest extends ActivityInstrumentationTestCase2<AdvancedJokeList> {
 	public AdvancedJokeListTest() {

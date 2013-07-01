@@ -11,11 +11,11 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import edu.calpoly.android.lab3.AdvancedJokeList;
-import edu.calpoly.android.lab3.Joke;
-import edu.calpoly.android.lab3.JokeListAdapter;
-import edu.calpoly.android.lab3.JokeView;
 import edu.calpoly.android.lab3.tests.FriendClass.FriendClassException;
+import edu.calpoly.android.lab4.AdvancedJokeList;
+import edu.calpoly.android.lab4.Joke;
+import edu.calpoly.android.lab4.JokeListAdapter;
+import edu.calpoly.android.lab4.JokeView;
 
 public class AdvancedJokeListAcceptanceTest extends ActivityInstrumentationTestCase2<AdvancedJokeList> {
 
