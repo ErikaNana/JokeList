@@ -1,4 +1,4 @@
-package edu.calpoly.android.lab3.tests;
+package edu.calpoly.android.lab4.tests;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -16,10 +16,10 @@ import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 import com.actionbarsherlock.view.SubMenu;
 
-import edu.calpoly.android.lab3.R;
 import edu.calpoly.android.lab4.AdvancedJokeList;
 import edu.calpoly.android.lab4.Joke;
 import edu.calpoly.android.lab4.JokeView;
+import edu.calpoly.android.lab4.R;
 
 public class AdvancedJokeListAddFilterTest extends ActivityInstrumentationTestCase2<AdvancedJokeList> {
 	
@@ -30,8 +30,7 @@ public class AdvancedJokeListAddFilterTest extends ActivityInstrumentationTestCa
 	}
 	
 	@Override
-	protected void setUp()
-	{
+	protected void setUp() {
 		ajl = this.getActivity();
 	}
 	
@@ -39,7 +38,7 @@ public class AdvancedJokeListAddFilterTest extends ActivityInstrumentationTestCa
 	 * Basic sanity check for responsive menu.
 	 */
 	@SmallTest
-	public void testMenuFilter(){
+	public void testMenuFilter() {
 		Menu menu = null;
 		menu = this.retrieveHiddenMember("m_vwMenu", menu, getActivity());
 		MenuItem mi = menu.getItem(0);
@@ -50,7 +49,7 @@ public class AdvancedJokeListAddFilterTest extends ActivityInstrumentationTestCa
 	 * Basic sanity check for responsive submenus.
 	 */
 	@SmallTest
-	public void testSubMenus(){
+	public void testSubMenus() {
 		Menu menu = null;
 		menu = this.retrieveHiddenMember("m_vwMenu", menu, getActivity());
 		MenuItem mi = menu.getItem(0);
@@ -71,7 +70,7 @@ public class AdvancedJokeListAddFilterTest extends ActivityInstrumentationTestCa
 	 * if the filter doesn't do anything.
 	 */
 	@SmallTest
-	public void testFilterUnratedDefaultJokes(){
+	public void testFilterUnratedDefaultJokes() {
 		Menu menu = null;
 		ArrayList<Joke> m_arrFilteredJokeList = null;
 		m_arrFilteredJokeList = this.retrieveHiddenMember("m_arrFilteredJokeList", m_arrFilteredJokeList,
@@ -101,7 +100,7 @@ public class AdvancedJokeListAddFilterTest extends ActivityInstrumentationTestCa
 	 * Tests Like filtering with the preloaded default jokes, no ratings changed.
 	 */
 	@SmallTest
-	public void testFilterLikeDefaultJokes(){
+	public void testFilterLikeDefaultJokes() {
 		Menu menu = null;
 		ArrayList<Joke> m_arrFilteredJokeList = null;
 		m_arrFilteredJokeList = this.retrieveHiddenMember("m_arrFilteredJokeList", m_arrFilteredJokeList,
@@ -126,7 +125,7 @@ public class AdvancedJokeListAddFilterTest extends ActivityInstrumentationTestCa
 	 * Tests Dislike filtering with the preloaded default jokes, no ratings changed.
 	 */
 	@SmallTest
-	public void testFilterDislikeDefaultJokes(){
+	public void testFilterDislikeDefaultJokes() {
 		Menu menu = null;
 		ArrayList<Joke> m_arrFilteredJokeList = null;
 		m_arrFilteredJokeList = this.retrieveHiddenMember("m_arrFilteredJokeList", m_arrFilteredJokeList,
@@ -151,7 +150,7 @@ public class AdvancedJokeListAddFilterTest extends ActivityInstrumentationTestCa
 	 * Tests filtering to show no jokes, then bringing them back.
 	 */
 	@SmallTest
-	public void testFilterShowHideAllDefaultJokes(){
+	public void testFilterShowHideAllDefaultJokes() {
 		Menu menu = null;
 		ArrayList<Joke> m_arrFilteredJokeList = null;
 		m_arrFilteredJokeList = this.retrieveHiddenMember("m_arrFilteredJokeList", m_arrFilteredJokeList,

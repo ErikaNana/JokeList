@@ -13,6 +13,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
+import android.util.Log;
 
 /**
  * Class that provides content from a SQLite database to the application.
@@ -67,6 +68,7 @@ public class JokeContentProvider extends ContentProvider {
 	
 	@Override
 	public boolean onCreate() {
+		Log.w("CREATING", "i'm in onCreate");
 		// initialize database class variable as a new JokeDatabaseHelper
 		database = new JokeDatabaseHelper(getContext(), JokeDatabaseHelper.DATABASE_NAME, null, JokeDatabaseHelper.DATABASE_VERSION);
 		return false;

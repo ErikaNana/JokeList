@@ -1,4 +1,4 @@
-package edu.calpoly.android.lab3.tests;
+package edu.calpoly.android.lab4.tests;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -8,20 +8,23 @@ import android.test.suitebuilder.annotation.SmallTest;
 import android.view.KeyEvent;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.TextView;
+import android.widget.ListAdapter;
+import android.widget.ListView;
+import android.widget.RadioButton;
 import edu.calpoly.android.lab4.AdvancedJokeList;
 import edu.calpoly.android.lab4.Joke;
+import edu.calpoly.android.lab4.JokeView;
+import edu.calpoly.android.lab4.R;
 
-public class AdvancedJokeListPreTest extends ActivityInstrumentationTestCase2<AdvancedJokeList> {
-	public AdvancedJokeListPreTest() {
+public class AdvancedJokeListTest2 extends ActivityInstrumentationTestCase2<AdvancedJokeList> {
+	public AdvancedJokeListTest2() {
 		super(AdvancedJokeList.class);
 	}
 
 	@SmallTest
 	public void testAddJokeViaButton() {
 		ArrayList<Joke> m_arrJokeList = null;
-		m_arrJokeList = this.retrieveHiddenMember("m_arrJokeList", m_arrJokeList,getActivity());
+		m_arrJokeList = this.retrieveHiddenMember("m_arrJokeList", m_arrJokeList, getActivity());
 		EditText et = null;
 		Button bt = null;
 		final EditText m_vwJokeEditText = this.retrieveHiddenMember("m_vwJokeEditText", et, getActivity());
@@ -37,13 +40,14 @@ public class AdvancedJokeListPreTest extends ActivityInstrumentationTestCase2<Ad
 		getInstrumentation().waitForIdleSync();
 		assertEquals("Should be 4 jokes now", 4, m_arrJokeList.size());
 		assertEquals("Ensure the joke we added is really there", "This is a test joke", m_arrJokeList.get(3).getJoke());	
-		LinearLayout m_vwJokeLayout = null;
+		ListView m_vwJokeLayout = null;
 		m_vwJokeLayout = this.retrieveHiddenMember("m_vwJokeLayout", m_vwJokeLayout, getActivity());
 		assertEquals("Should be 4 joke views", 4, m_vwJokeLayout.getChildCount());
-		TextView tv = (TextView)m_vwJokeLayout.getChildAt(3);
-		assertEquals("Text view should also have the new joke", "This is a test joke", tv.getText());
+		ListAdapter adapter = m_vwJokeLayout.getAdapter();
+		Joke joke = (Joke)adapter.getItem(3);
+		assertEquals("The adapter should also have the new joke", "This is a test joke", joke.getJoke());
 	}
-	
+
 	@SmallTest
 	public void testAddJokeViaReturn() {
 		ArrayList<Joke> m_arrJokeList = null;
@@ -59,11 +63,12 @@ public class AdvancedJokeListPreTest extends ActivityInstrumentationTestCase2<Ad
 		sendKeys(KeyEvent.KEYCODE_ENTER);
 		assertEquals("Should be 4 jokes now", 4, m_arrJokeList.size());
 		assertEquals("Ensure the joke we added is really there", "This is a second test joke", m_arrJokeList.get(3).getJoke());	
-		LinearLayout m_vwJokeLayout = null;
-		m_vwJokeLayout = this.retrieveHiddenMember("m_vwJokeLayout", m_vwJokeLayout, getActivity());
+		ListView m_vwJokeLayout = null;
+		m_vwJokeLayout = this.retrieveHiddenMember("m_vwJokeLayout", m_vwJokeLayout,getActivity());
 		assertEquals("Should be 4 joke views", 4, m_vwJokeLayout.getChildCount());
-		TextView tv = (TextView)m_vwJokeLayout.getChildAt(3);	
-		assertEquals("Text view should also have the new joke", "This is a second test joke", tv.getText());
+		ListAdapter adapter = m_vwJokeLayout.getAdapter();
+		Joke joke = (Joke)adapter.getItem(3);
+		assertEquals("The adapter should also have the new joke", "This is a second test joke", joke.getJoke());
 	}
 
 	@SmallTest
@@ -81,11 +86,13 @@ public class AdvancedJokeListPreTest extends ActivityInstrumentationTestCase2<Ad
 		sendKeys(KeyEvent.KEYCODE_DPAD_CENTER);
 		assertEquals("Should be 4 jokes now", 4, m_arrJokeList.size());
 		assertEquals("Ensure the joke we added is really there", "This is a third test joke", m_arrJokeList.get(3).getJoke());	
-		LinearLayout m_vwJokeLayout = null;
+		ListView m_vwJokeLayout = null;
 		m_vwJokeLayout = this.retrieveHiddenMember("m_vwJokeLayout", m_vwJokeLayout, getActivity());
 		assertEquals("Should be 4 joke views", 4, m_vwJokeLayout.getChildCount());
-		TextView tv = (TextView)m_vwJokeLayout.getChildAt(3);	
-		assertEquals("Text view should also have the new joke", "This is a third test joke", tv.getText());
+		ListAdapter adapter = m_vwJokeLayout.getAdapter();
+		Joke joke = (Joke)adapter.getItem(3);
+		assertEquals("The adapter should also have the new joke", "This is a third test joke", joke.getJoke());
+
 	}
 
 	@SmallTest
@@ -95,13 +102,44 @@ public class AdvancedJokeListPreTest extends ActivityInstrumentationTestCase2<Ad
 		assertEquals("Check Button Text", "Add Joke", m_vwJokeButton.getText());
 	}
 
+	/********************/
+	/** JokeView Tests **/
+	/********************/
+
 	@SmallTest
-	public void testTextViewSize() {
-		LinearLayout m_vwJokeLayout = null;
+	public void testCheckLike() {
+		ListView m_vwJokeLayout = null;
 		m_vwJokeLayout = this.retrieveHiddenMember("m_vwJokeLayout", m_vwJokeLayout, getActivity());
-		TextView tv = (TextView)m_vwJokeLayout.getChildAt(1);
-		assertEquals("Check text size", AdvancedJokeListAcceptanceTest.TEXT_SIZE, tv.getTextSize(), .001);
-	}
+		ListAdapter adapter = m_vwJokeLayout.getAdapter();
+		JokeView jv = (JokeView)adapter.getView(0, null, null);
+
+		final RadioButton m_vwLikeButton = (RadioButton)jv.findViewById(R.id.likeButton);
+		assertFalse("Check Like Unchecked", m_vwLikeButton.isChecked());
+
+		getActivity().runOnUiThread(new Runnable() {
+		public void run() {
+			m_vwLikeButton.performClick();
+		}
+		});
+		getInstrumentation().waitForIdleSync();
+		assertTrue("Check Like Checked", m_vwLikeButton.isChecked());
+
+		//expand second button
+		JokeView jv2 = (JokeView)adapter.getView(1, null, null);
+
+		final RadioButton m_vwDislikeButton2 = (RadioButton)jv2.findViewById(R.id.dislikeButton);
+		assertFalse("Check Dislike Unchecked", m_vwDislikeButton2.isChecked());
+
+		getActivity().runOnUiThread(new Runnable() {
+		public void run() {
+			m_vwDislikeButton2.performClick();
+		}
+		});
+		getInstrumentation().waitForIdleSync();
+		assertTrue("Check Dislike Checked", m_vwDislikeButton2.isChecked());
+		assertTrue("Check Like Checked", m_vwLikeButton.isChecked());
+		assertTrue("Check Dislike Checked", m_vwDislikeButton2.isChecked());
+}
 
 	/*************************************/
 	/**	Java Friend-Class Helper Method **/
@@ -126,7 +164,7 @@ public class AdvancedJokeListPreTest extends ActivityInstrumentationTestCase2<Ad
 		}  
 		
 		// Boiler Plate Exception Checking. If any of these Exceptions are 
-		// throw it was becuase this method was called improperly.
+		// throw it was because this method was called improperly.
 		catch (IllegalArgumentException e) {
 			fail ("This is an Error caused by the UnitTest!\n Improper user of retrieveHiddenMember(...) -- IllegalArgumentException:\n Passed in the wrong object to Field.get(...)");
 		} catch (IllegalAccessException e) {

@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="edu.calpoly.android.lab3"
+    package="edu.calpoly.android.lab4"
     android:versionCode="1"
     android:versionName="1.0" >
 
@@ -27,7 +27,7 @@
 	</provider>
     </application>
     <instrumentation android:name="android.test.InstrumentationTestRunner"
-                     android:targetPackage="edu.calpoly.android.lab3"
-                     android:label="Tests for Lab 3."/>
+                     android:targetPackage="edu.calpoly.android.lab4"
+                     android:label="Tests for Lab 4."/>
 
 </manifest>

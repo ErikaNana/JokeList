@@ -1,4 +1,4 @@
-package edu.calpoly.android.lab3.tests;
+package edu.calpoly.android.lab4.tests;
 
 import junit.framework.TestCase;
 import android.test.suitebuilder.annotation.SmallTest;
@@ -32,15 +32,16 @@ public class JokeTest extends TestCase {
 
 	@SmallTest
 	/**
-	 * Test Parameterized Constructor: Joke(String strJoke, String strAuthor, int nRating)
+	 * Test Parameterized Constructor: Joke(String strJoke, String strAuthor, int nRating, long id)
 	 */
 	public void testJokeStringStringInt() {
 		String strJoke = "testJoke";
 		String strAuthor = "testAuthor";
-		Joke joke = new Joke(strJoke, strAuthor, Joke.DISLIKE);
+		Joke joke = new Joke(strJoke, strAuthor, Joke.DISLIKE, 10);
 		assertEquals("m_strJoke should be initialized to \"testJoke\".", strJoke, joke.getJoke());
 		assertEquals("m_strAuthorName should be initialized to \"testAuthor\".", strAuthor, joke.getAuthor());
 		assertEquals("m_nRating should be initialized to Joke.DISLIKE.", Joke.DISLIKE, joke.getRating());
+		assertEquals("m_nID should be initialized to \"10\".", 10, joke.getID());
 	}
 	
 	@SmallTest
@@ -76,27 +77,31 @@ public class JokeTest extends TestCase {
 	}
 
 	@SmallTest
+	/**
+	 * Test Mutator Method
+	 */
+	public void testSetID() {
+		Joke joke = new Joke();
+		joke.setID(10);
+		assertEquals("m_nID should be set to \"10\".", 10, joke.getID());
+	}
+
+	@SmallTest
 	public void testEquals() {
 		String strJoke = "testJoke";
-		String strJokeEQ = "testJoke";
 		String strAuthor = "testAuthor";
-		String strAuthorEQ = "testAuthor";
 		
-		Joke joke = new Joke(strJoke, strAuthor);
-		Joke jokeEQ = new Joke(strJoke, strAuthor);
-		Joke jokeEQ2 = new Joke(strJokeEQ, strAuthorEQ);
-		Joke jokeNEQ = new Joke("different", strAuthor);
-		Joke jokeNEQ2 = new Joke(strJoke, "different");
-		Joke jokeNEQ3 = new Joke("different", "different");
+		Joke joke = new Joke(strJoke, strAuthor, Joke.LIKE, 99);
+		Joke jokeEQ = new Joke(strJoke, strAuthor, Joke.LIKE, 99);
+		Joke jokeEQ2 = new Joke(strAuthor, strJoke, Joke.DISLIKE, 99);
+		Joke jokeNEQ = new Joke(strJoke, strAuthor, Joke.LIKE, 1);
 				
 		assertFalse("equals(Object obj) should return false. Testing against null", joke.equals(null));
-		assertFalse("equals(Object obj) should return false. Not comparing two obj is not an instance of Joke", joke.equals(strJoke));
-		assertFalse("equals(Object obj) should return false. The two jokes have different m_strJoke values", joke.equals(jokeNEQ));
-		assertFalse("equals(Object obj) should return false. The two jokes have different m_strJoke values", joke.equals(jokeNEQ2));
-		assertFalse("equals(Object obj) should return false. The two jokes have different m_strJoke values", joke.equals(jokeNEQ3));
-		assertTrue("equals(Object obj) should return true. The testing against itself", joke.equals(joke));
-		assertTrue("equals(Object obj) should return true. The testing against different Joke containing a reference to the same String object", joke.equals(jokeEQ));
-		assertTrue("equals(Object obj) should return true. The testing against different Joke containing different String with same text", joke.equals(jokeEQ2));
+		assertFalse("equals(Object obj) should return false. Not comparing against another Joke object; obj is not an instance of Joke", joke.equals(strJoke));
+		assertFalse("equals(Object obj) should return false. The two jokes have different m_nID values", joke.equals(jokeNEQ));
+		assertTrue("equals(Object obj) should return true. Testing against itself", joke.equals(joke));
+		assertTrue("equals(Object obj) should return true. Testing against different Joke containing same data", joke.equals(jokeEQ));
+		assertTrue("equals(Object obj) should return true. Testing against different Joke containing different data except for m_nID which is the same", joke.equals(jokeEQ2));
 	}
 
 	@SmallTest

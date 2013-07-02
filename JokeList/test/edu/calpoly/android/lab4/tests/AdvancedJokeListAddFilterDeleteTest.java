@@ -1,4 +1,4 @@
-package edu.calpoly.android.lab3.tests;
+package edu.calpoly.android.lab4.tests;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -14,11 +14,11 @@ import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 import com.actionbarsherlock.view.SubMenu;
 
-import edu.calpoly.android.lab3.R;
 import edu.calpoly.android.lab4.AdvancedJokeList;
 import edu.calpoly.android.lab4.Joke;
 import edu.calpoly.android.lab4.JokeListAdapter;
 import edu.calpoly.android.lab4.JokeView;
+import edu.calpoly.android.lab4.R;
 
 public class AdvancedJokeListAddFilterDeleteTest extends ActivityInstrumentationTestCase2<AdvancedJokeList> {
 	
@@ -29,8 +29,7 @@ public class AdvancedJokeListAddFilterDeleteTest extends ActivityInstrumentation
 	}
 	
 	@Override
-	protected void setUp()
-	{
+	protected void setUp() {
 		ajl = this.getActivity();
 	}
 	

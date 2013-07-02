@@ -11,6 +11,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -30,7 +31,7 @@ import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 import com.actionbarsherlock.view.SubMenu;
 
-import edu.calpoly.android.lab3.R;
+import edu.calpoly.android.lab4.R;
 import edu.calpoly.android.lab4.JokeView.OnJokeChangeListener;
 //import android.util.Log;
 
@@ -209,6 +210,7 @@ public class AdvancedJokeList extends SherlockFragmentActivity implements androi
 	 */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
+		Log.w("CREATING", "i'm in onCreate");
 		super.onCreate(savedInstanceState);
 		this.initLayout();
 		
@@ -235,12 +237,12 @@ public class AdvancedJokeList extends SherlockFragmentActivity implements androi
 		 * initLoader parameters
 		 * id: a unique id that identifies the loader
 		 * null: optional argument to supply to the loader
-		 * this: a LodaerManager.LoaderCallbacks implementation, which the LoadManager calls to report loader events.
+		 * this: a LoaderManager.LoaderCallbacks implementation, which the LoadManager calls to report loader events.
 		 * 		 AdvancedJokeList implements the LoaderManager.LoaderCallbacks interface, so pass in this
 		 * This method will initialize whatever loader we want in the onCreateLoader() method, but need to specify that it is 
 		 * indeed a CursorLoader being loaded
 		 */
-		this.getSupportLoaderManager().initLoader(LOADER_ID, null, this);
+		//this.getSupportLoaderManager().initLoader(LOADER_ID, null, this);
 		//set m_vwJokeLayout's adapter to be m_jokeAdapter
 		this.m_vwJokeLayout.setAdapter(m_jokeAdapter);
 		

@@ -2,6 +2,7 @@ package edu.calpoly.android.lab4;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatabase.CursorFactory;
+import android.util.Log;
 
 /**
  * Class that hooks up to the JokeContentProvider for initialization and
@@ -37,6 +38,7 @@ public class JokeDatabaseHelper extends android.database.sqlite.SQLiteOpenHelper
 	@Override
 	public void onCreate(SQLiteDatabase db) {
 		//call the helper method from JokeTable
+		Log.w("CREATING", "i'm in onCreate");
 		JokeTable.onCreate(db);
 	}
 
