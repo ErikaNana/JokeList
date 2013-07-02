@@ -32,3 +32,19 @@ Drop Table
 ---------
 Drop Table statement is used to remove a table definition and all associated data, indexes, triggers, constraints and permission
 specifications for that table
+
+Projection
+-----------
+In Relational algebra, projection means collecting a subset of columns for use in operations, 
+i.e. a projection is the list of columns selected.
+
+ContentResolver with ContentProvider
+-----------------------------------
+-when you want to access data in a content provider
+	-use ContentResolver object in application's Context to communicate with the provider as a client
+	-communicates with the ContentProvider object
+		-instance of a class that implements ConentProvider
+ContentProvider
+	-receives data requests from clients
+	-performs the requested action
+	-returns the results

@@ -1,14 +1,16 @@
 package edu.calpoly.android.lab4;
 
-import java.util.ArrayList;
-
 import android.app.Activity;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.res.Resources;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -21,7 +23,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.actionbarsherlock.app.SherlockActivity;
+import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.ActionMode;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
@@ -29,21 +31,23 @@ import com.actionbarsherlock.view.MenuItem;
 import com.actionbarsherlock.view.SubMenu;
 
 import edu.calpoly.android.lab3.R;
+import edu.calpoly.android.lab4.JokeView.OnJokeChangeListener;
+//import android.util.Log;
 
-
-public class AdvancedJokeList extends SherlockActivity {
+//need to extend SherlockFragmentActivity instead, otherwise can't use a LoaderManager
+public class AdvancedJokeList extends SherlockFragmentActivity implements android.support.v4.app.LoaderManager.LoaderCallbacks<Cursor>, OnJokeChangeListener {
 	
 	/** Contains the name of the Author for the jokes. */
 	protected String m_strAuthorName;
 
-	/** Contains the list of Jokes the Activity will present to the user. */
-	protected ArrayList<Joke> m_arrJokeList;
+/*	*//** Contains the list of Jokes the Activity will present to the user. *//*
+	protected ArrayList<Joke> m_arrJokeList;*/
 	
-	/** Contains the list of filtered Jokes the Activity will present to the user. */
-	protected ArrayList<Joke> m_arrFilteredJokeList;
+/*	*//** Contains the list of filtered Jokes the Activity will present to the user. *//*
+	protected ArrayList<Joke> m_arrFilteredJokeList;*/
 
 	/** Adapter used to bind an AdapterView to List of Jokes. */
-	protected JokeListAdapter m_jokeAdapter;
+	protected JokeCursorAdapter m_jokeAdapter;
 
 	/** ViewGroup used for maintaining a list of Views that each display Jokes. */
 	protected ListView m_vwJokeLayout;
@@ -95,6 +99,9 @@ public class AdvancedJokeList extends SherlockActivity {
 	/** Key to store text m_vwJokeEditText in SharedPreferences */
 	protected static final String SAVED_EDIT_TEXT = "saved_edit_text";
 	
+	/** The ID of the CursorLoader to be initialized in the LoaderManager and used to load a Cursor. */
+	private static final int LOADER_ID = 1;
+	
 	//implement the ActionMode.Callback
 	protected com.actionbarsherlock.view.ActionMode actionMode;
 	protected com.actionbarsherlock.view.ActionMode.Callback callback = new com.actionbarsherlock.view.ActionMode.Callback() {
@@ -107,7 +114,7 @@ public class AdvancedJokeList extends SherlockActivity {
 		 */
 		@Override
 		public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-			//inflate actionmenu, for the context menu items
+			//inflate action menu, for the context menu items
 			MenuInflater inflater = mode.getMenuInflater();
 			inflater.inflate(R.menu.actionmenu, menu);
 			return true;
@@ -120,7 +127,7 @@ public class AdvancedJokeList extends SherlockActivity {
 		 */
 		@Override
 		public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-			return false; //Return false if nothing is done
+			return false; //Return false since nothing is done
 		}
 		
 		/**
@@ -134,20 +141,9 @@ public class AdvancedJokeList extends SherlockActivity {
 			switch(item.getItemId()) {
 				case R.id.menu_remove:
 					Toast.makeText(getBaseContext(), "clicked remove", Toast.LENGTH_SHORT).show();
-					
-					//find position of joke in the filtered array
-					Joke actual_joke = current_JokeView.getJoke();
-					if (m_arrFilteredJokeList.contains(actual_joke)) {
-						int position = m_arrFilteredJokeList.indexOf(actual_joke);
-						//delete the joke
-						m_arrFilteredJokeList.remove(position);
-						//notify the adapter
-						m_jokeAdapter.notifyDataSetChanged();
-						
-						//also delete it from master list
-						int positon_master = m_arrJokeList.indexOf(actual_joke);
-						m_arrJokeList.remove(positon_master);
-					}
+					//retrieve the Joke from the currently selected JokeView
+					Joke current_joke = current_JokeView.getJoke();
+					removeJoke(current_joke);
 					mode.finish(); //Action done, so close the CAB
 					return true;
 				default:
@@ -164,6 +160,22 @@ public class AdvancedJokeList extends SherlockActivity {
 			
 		}
 	};
+
+	/** Refreshes the JokeViews and their corresponding values in the database automatically
+	 * Call this method whenever there are changes made to any of the jokes in the list, such as rating
+	 * being changed or a new joke being added*/
+	public void fillData() {
+		//restart the CursorLoader
+		/*
+		 * restart loader: params: id (unique identifier for loader) args (optional args to supply loader) callback 
+		 * (interface of the LoaderManger will call to report about changes in the state of the loader
+		 */
+
+		this.getSupportLoaderManager().restartLoader(AdvancedJokeList.LOADER_ID, null, this);
+		
+		//set layout's adapter to m_jokeAdapter
+		this.m_vwJokeLayout.setAdapter(m_jokeAdapter);
+	}
 	
 	/**
 	 * Set ListView to have an OnItemLongClickListener
@@ -207,25 +219,28 @@ public class AdvancedJokeList extends SherlockActivity {
 		this.m_nLightColor = resources.getInteger(R.color.light);
 		this.m_nTextColor = resources.getInteger(R.color.text);
 		
-		this.m_arrJokeList = new ArrayList<Joke>(); //initialize to new instance
-		this.m_arrFilteredJokeList = new ArrayList<Joke>();
-		
-		//get array of joke strings
-		String[] joke_strings = resources.getStringArray(R.array.jokeList); 
-		
-		//set the author name
-		this.m_strAuthorName = resources.getString(R.string.author_name);
-		
-		//for each of the strings in joke_strings, make call to addJoke
-		for (String joke_string : joke_strings) {
-			Joke joke = new Joke(joke_string, this.m_strAuthorName);
-			this.addJoke(joke);
-		}
 	
-		//initialize m_jokeAdapter member variable with ArrayList of jokes
-		//need to bind to m_arrFilteredJokeList
-		this.m_jokeAdapter = new JokeListAdapter(this, m_arrFilteredJokeList);
-			
+		//change type of m_jokeAdapter to JokeCursorAdapter
+		/**
+		 * No cursor to give it yet, so null
+		 * flags is used to determine the behavior of the adapter, but can't use the constants so just put it to 0
+		 */
+		this.m_jokeAdapter = new JokeCursorAdapter(this,null,0);
+		
+		//set to onJokeChangeListenr for the adapter to "this"
+		this.m_jokeAdapter.setOnJokeChangeListener(this);
+		/**
+		 * prepare a loader
+		 * 
+		 * initLoader parameters
+		 * id: a unique id that identifies the loader
+		 * null: optional argument to supply to the loader
+		 * this: a LodaerManager.LoaderCallbacks implementation, which the LoadManager calls to report loader events.
+		 * 		 AdvancedJokeList implements the LoaderManager.LoaderCallbacks interface, so pass in this
+		 * This method will initialize whatever loader we want in the onCreateLoader() method, but need to specify that it is 
+		 * indeed a CursorLoader being loaded
+		 */
+		this.getSupportLoaderManager().initLoader(LOADER_ID, null, this);
 		//set m_vwJokeLayout's adapter to be m_jokeAdapter
 		this.m_vwJokeLayout.setAdapter(m_jokeAdapter);
 		
@@ -412,44 +427,10 @@ public class AdvancedJokeList extends SherlockActivity {
 	  * @param filter the filter for which the jokes should be filtered by
 	  */
 	protected void updateFilteredJokes (int filter) {
-		//show only filtered jokes and clear the filtered list before starting
-		if (!m_arrFilteredJokeList.isEmpty()) {
-			m_arrFilteredJokeList.clear();
-			this.m_jokeAdapter.notifyDataSetChanged();
-		}
-		
-		switch (filter) {
-			case AdvancedJokeList.FILTER_LIKE:{
-				for(Joke joke: this.m_arrJokeList) {
-					if(joke.getRating() == Joke.LIKE) {
-						this.m_arrFilteredJokeList.add(joke);
-					}
-				}
-				break;
-			}
-			case AdvancedJokeList.FILTER_DISLIKE:{
-				for(Joke joke: this.m_arrJokeList) {
-					if(joke.getRating() == Joke.DISLIKE) {
-						this.m_arrFilteredJokeList.add(joke);
-					}
-				}
-				break;
-			}
-			case AdvancedJokeList.FILTER_UNRATED:{
-				for(Joke joke: this.m_arrJokeList) {
-					if(joke.getRating() == Joke.UNRATED) {
-						this.m_arrFilteredJokeList.add(joke);
-					}
-				}
-				break;
-			}
-			case AdvancedJokeList.FILTER_SHOW_ALL:{
-				for(Joke joke: this.m_arrJokeList) {
-					this.m_arrFilteredJokeList.add(joke);
-				}
-				break;
-			}
-		}				
+		//set the filter value
+		//but do i need this since filter is set in onOptions clicked?
+		//call fillData() to complete the refreshing cycle
+		fillData();
 	}
 	
 	/**
@@ -508,10 +489,130 @@ public class AdvancedJokeList extends SherlockActivity {
 	 *            The Joke to add to list of Jokes.
 	 */
 	protected void addJoke(Joke joke) {
-	
-		//send message to LogCat for each Joke that is added to the Joke List
-		Log.d("Lab2_JokeList", "Adding new joke:  " + joke.getJoke());
-		this.m_arrJokeList.add(joke); 
-		this.m_arrFilteredJokeList.add(joke);
+		Uri uri;
+		uri = Uri.withAppendedPath(JokeContentProvider.CONTENT_URI, "/jokes/" + joke.getID());
+		ContentValues contents = new ContentValues();
+		contents.put("joke_text", joke.getJoke());
+		contents.put("joke_author", joke.getAuthor());
+		contents.put("joke_rating", joke.getRating());
+		
+		//set joke ID to the return value of insertion call (insert returns the ID of the newly inserted row
+		Uri newUri = this.getContentResolver().insert(uri, contents);
+		Long automated_joke_id = Long.valueOf(newUri.getLastPathSegment());
+		joke.setID(automated_joke_id);
+		
+		//call fillData() to complete the refreshing cycle
+		fillData();
 	}
+	/**
+	 * Will use the LoaderManager's powers to initialize a loader for us, but the CursorLoader requires a ContentProvider
+	 * Instantiate and return a new Loader for the given id
+	 * @param id The ID whose loader is to be created
+	 * @param args Any arguments supplied by the caller
+	 * @return A new loader instance that is ready to start loading
+	 */
+	@Override
+	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+		//serve as projection for the CursorLoader, name in order as they appear in JokeTable
+		String [] projection = {JokeTable.KEY_ID, JokeTable.JOKE_TEXT,
+								JokeTable.JOKE_RATING, JokeTable.JOKE_AUTHOR};
+		
+		//get the rating in string form
+		String rating = ratingAsString();
+		//based on the rating, create the URI for appropriate filter
+		Uri filter_uri = Uri.withAppendedPath(JokeContentProvider.CONTENT_URI, "/filters/" + rating);
+		
+		/*create new Cursor Loader and initialize it with the uri and projection
+		 * CursorLoader(Context context, Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder)
+		 * Creates a fully-specified CursorLoader.
+		 * The CursorLoader will load the Cursor after making a hidden automated query call*/
+		CursorLoader cursor_loader = new CursorLoader(this.getBaseContext(),filter_uri,projection, null, null, null);
+		return cursor_loader;
+	}
+	
+	/**
+	 * Called when a previously created loader has finished its load
+	 * @param loader The Loader that has finished
+	 * @param data The data generated by the Loader
+	 */
+	@Override
+	public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+		//call swapCursor on adapter since cursor is being placed in CursorAdapter (just how it works so that old Cursor is not closed)
+		//swapCursor swaps in a new Cursor, returning the old Cursor but doesn't close the old Cursor (param newCursor, which is cursor to be used)
+		this.m_jokeAdapter.swapCursor(data);
+		//set it back to "this"because made it null in onJokeChanged
+		this.m_jokeAdapter.setOnJokeChangeListener(this);
+	}
+
+	/**
+	 * Called when a previously created loader is being reset, and thus making the data unavailable
+	 * The application at this point should remove any references it has to the Loader's data
+	 * @param loader The Loader that is being reset
+	 */
+	@Override
+	public void onLoaderReset(Loader<Cursor> loader) {
+		//pass in null since loaded object is about to be reloaded and therefore the data behind it needs to be invalidated
+		this.m_jokeAdapter.swapCursor(null);
+	}
+	/** Helper method for URI
+	 * Depending on the currently selected filter (m_nFilter), it responds the corresponding
+	 * rating as a string (Like = 1, Dislike = 2, Unrated = 0)
+	 */
+	public String ratingAsString () {
+		switch(filter) {
+			case (FILTER_LIKE):{
+				return "" + Joke.LIKE;
+			}
+			case (FILTER_DISLIKE):{
+				return "" + Joke.DISLIKE;
+			}
+			case (FILTER_UNRATED):{
+				return "" + Joke.UNRATED;
+			}
+
+			case (FILTER_SHOW_ALL):{
+				//this should be "4"
+				return "4";
+			}
+			default:
+				return "13";
+		}
+	}
+
+	/**
+	 * Whenever a value changes in a JokeView the change will immediately sync back to the database
+	 */
+	@Override
+	public void onJokeChanged(JokeView view, Joke joke) {
+		// uri tells content provider's URIMatcher in update() that the row with joke.getId() needs to be updated
+		Uri uri;
+		//does joke.getID() have to be an int?
+		uri = Uri.withAppendedPath(JokeContentProvider.CONTENT_URI, "/jokes/" + joke.getID());
+		//put joke text, rating and author inside of ContentValues, will be added to database for designated joke
+		ContentValues contents = new ContentValues();
+		contents.put("joke_text", joke.getJoke());
+		contents.put("joke_rating",joke.getRating());
+		contents.put("joke_author", joke.getAuthor());
+	
+		this.getContentResolver().update(uri, contents, null, null);
+		
+		//need to set the listener in the adapter to null
+		//otherwise app will loop definitely due to the OnJokeChangeListener both receiving news of a change and sending one itself
+		this.m_jokeAdapter.setOnJokeChangeListener(null);
+		
+		this.fillData();
+	}
+	
+	/**
+	 * Removes the joke
+	 */
+	public void removeJoke(Joke joke) {
+		//URI that will tell content provider's URIMatcher in delete() that the row with joke.getID() needs to be deleted
+		Uri uri;
+		uri = Uri.withAppendedPath(JokeContentProvider.CONTENT_URI, "/jokes/" + joke.getID());
+		
+		this.getContentResolver().delete(uri, null, null);
+		
+	}
+
 }

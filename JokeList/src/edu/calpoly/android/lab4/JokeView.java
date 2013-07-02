@@ -27,6 +27,9 @@ public class JokeView extends LinearLayout implements OnCheckedChangeListener{
 	/** The data version of this View, containing the joke's information. */
 	private Joke m_joke;
 	
+	/** Interface between this JokeView and the database it's stored in. */
+	private OnJokeChangeListener m_onJokeChangeListener;
+	
 	/**
 	 * Basic Constructor that takes only an application Context.
 	 * 
@@ -55,6 +58,10 @@ public class JokeView extends LinearLayout implements OnCheckedChangeListener{
 		setJoke(joke);
 		//setting the OnCheckedLisneter for m_vwLikeGroup to this JokeView object
 		m_vwLikeGroup.setOnCheckedChangeListener(this);
+		
+/*		only want to listen for joke changes when the actual joke values change, 
+		not when Joke object is being assigned to theJokeView*/
+		this.m_onJokeChangeListener = null;
 	}
 
 	/**
@@ -113,9 +120,59 @@ public class JokeView extends LinearLayout implements OnCheckedChangeListener{
 				this.m_joke.setRating(Joke.DISLIKE);
 			}
 		}
+		//must notify the OnJokeChangeListener() whenever change any of the underlying joke data 
+		this.notifyOnJokeChangeListener();
 		
 	}
-	
+	/**
+	 * Mutator method for changing the OnJokeChangeListener object this JokeView
+	 * notifies when the state its underlying Joke object changes.
+	 * 
+	 * It is possible and acceptable for m_onJokeChangeListener to be null, you
+	 * should allow for this.
+	 * 
+	 * @param listener
+	 *            The OnJokeChangeListener object that should be notified when
+	 *            the underlying Joke changes state.
+	 */
+	public void setOnJokeChangeListener(OnJokeChangeListener listener) {
+		this.m_onJokeChangeListener = listener;
+	}
+
+	/**
+	 * This method should always be called after the state of m_joke is changed.
+	 * 
+	 * It is possible and acceptable for m_onJokeChangeListener to be null, you
+	 * should test for this.
+	 * 
+	 * This method should not be called if setJoke(...) is called, since the
+	 * internal state of the Joke object that m_joke references is not be
+	 * changed. Rather, m_joke reference is being changed to reference a
+	 * different Joke object.
+	 */
+	protected void notifyOnJokeChangeListener() {
+		if (this.m_onJokeChangeListener != null) {
+			//idk if this is right
+			this.m_onJokeChangeListener.notifyAll();
+		}
+	}
+
+	/**
+	 * Interface definition for a callback to be invoked when the underlying
+	 * Joke is changed in this JokeView object.
+	 */
+	public static interface OnJokeChangeListener {
+
+		/**
+		 * Called when the underlying Joke in a JokeView object changes state.
+		 * 
+		 * @param view
+		 *            The JokeView in which the Joke was changed.
+		 * @param joke
+		 *            The Joke that was changed.
+		 */
+		public void onJokeChanged(JokeView view, Joke joke);
+	}
 	/**
 	 * Helper method
 	 * @return text of the joke

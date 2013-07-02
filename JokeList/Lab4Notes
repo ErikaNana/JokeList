@@ -881,13 +881,70 @@ Because we are only keeping this content provider local to our application, ther
 -However when making a content provider open to other applications besides the one the provider belongs to, there is a need to
 to worry about permissions
 
+OnJokeChangeListener and CursorAdpater
+-------------------------------------
+summary of app so far
+	-data is modified, created and retrieved from the database through the JokeContentProvider
+	-the JokeContentProvider exposes the database's data in a table
+	-A Cursor may be retrieved from the table via a query() call in JokeContentProvider
+	-The retrieved Cursor contains rows from the table that have a rating that matches the filter ID passed
+	in to query() via the URI parameter
 
+Adding another step: the Cursor will be bound to a ListView through the JokeCursorAdapter
 
+JokeCursorAdapter
+-----------------
+will function like JokeListAdapter, but this adapter is binding a ListView to a Cursor
+	-Cursor is tied to the joke table of the content provider
+-contains onJokeChangeListener
+	-completes the cycle of database-to-ListView-to-database updating
+-has to do with Joke change preservation going back to the database
+-when the list of Jokes is displayed on-screen, Jokes are retrieved from a cursor and then wrapped into JokeViews
+	-the JokeViews let the user modify the internal state of the Joke
+		-in particular, the ratings for a joke
+		-once user has modified rating for Joke, Joke object stops being an exact copy of the data in the database
+		-if we want to make sure that the new rating gets preserved
+			-must be able to write that rating change back to the database
+-JokeView and Adapter are two specialized classes
+	-they are charged with specific tasks that really don't care about the persistent state of a Joke
+	-Adapter
+		-provide View objects for Jokes
+	-JokeView
+		-show what a Joke looks like
+		-provides controls for manipulating the internal state of the Joke
+Follow Model-View-Controller pattern
+	-place responsibility of writing that change back to the database with the Activity
+		-by doing this, we decouple the Joke class from the idea of a Database entirely
+		-this allows the same Joke class to be used with or without a database
+		-BUT: need some way for the JokeView to signal to whomever is responsible, that its Joke object has has changed and
+		needs to be written back to the database
+			-do this with static interface named onJokeChangeListener in JokeView class
+				-specifies a callback method that gets called when a Joke's internal state changes
+				-each JokeView class holds a variable reference to a OnJokeChangeListener
+				-therefore: any class that is interested in receiving notifications that a Joke has changed should
+				implement the OnJokeChangeListener and register itself with the corresponding JokeView
+				
+Joke Persistence III: AdvancedJokeList and Loaders
+---------------------------------------------------
+-update AdvancedJokeList so that it completes the cycle of data transfer to and from the database and ListView children
+-have to integrate cursors and the app should work completely
 
+-instead of using CursorAdapter constructor to manage it, use Loaders
+	-use asynchronous handling
+	-they manage their loaded data automatically
+	-CursorLoader class
 
-
-
-
+Loaders
+--------
+-make it easy to asynchronously load data in an activity or fragment
+	-available to every Activity and Fragment
+	-provide asynchronous loading of data
+	-monitor the source of their data and deliver new results when the content changes
+	-automatically reconnect to the last loader's cursor when being recreated after a configuration change
+		-they don't need to requery their data
+-LoaderManager
+	-interface associated with an Activity or Fragment for managing one or more Loader instances associated with it
+	-this helps an application manage longer-running operations in conjuction with the Activity or Fragment lifecycle
 
 
 
