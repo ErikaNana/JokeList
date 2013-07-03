@@ -11,7 +11,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -22,7 +21,6 @@ import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.ActionMode;
@@ -31,7 +29,6 @@ import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 import com.actionbarsherlock.view.SubMenu;
 
-import edu.calpoly.android.lab4.R;
 import edu.calpoly.android.lab4.JokeView.OnJokeChangeListener;
 //import android.util.Log;
 
@@ -41,16 +38,10 @@ public class AdvancedJokeList extends SherlockFragmentActivity implements androi
 	/** Contains the name of the Author for the jokes. */
 	protected String m_strAuthorName;
 
-/*	*//** Contains the list of Jokes the Activity will present to the user. *//*
-	protected ArrayList<Joke> m_arrJokeList;*/
-	
-/*	*//** Contains the list of filtered Jokes the Activity will present to the user. *//*
-	protected ArrayList<Joke> m_arrFilteredJokeList;*/
-
 	/** Adapter used to bind an AdapterView to List of Jokes. */
 	protected JokeCursorAdapter m_jokeAdapter;
 
-	/** ViewGroup used for maintaining a list of Views that each display Jokes. */
+	/** ViewGroup used for maintaining a list of Views that 99each display Jokes. */
 	protected ListView m_vwJokeLayout;
 
 	/** EditText used for entering text for a new Joke to be added to m_arrJokeList. */
@@ -106,10 +97,7 @@ public class AdvancedJokeList extends SherlockFragmentActivity implements androi
 	//implement the ActionMode.Callback
 	protected com.actionbarsherlock.view.ActionMode actionMode;
 	protected com.actionbarsherlock.view.ActionMode.Callback callback = new com.actionbarsherlock.view.ActionMode.Callback() {
-		
-		//inflate Action Menu
-		//Set Action Mode to terminate after the Remove item is selected
-		
+				
 		/**
 		 *Called when the action mode is created; startActionMode() was called
 		 */
@@ -120,9 +108,7 @@ public class AdvancedJokeList extends SherlockFragmentActivity implements androi
 			inflater.inflate(R.menu.actionmenu, menu);
 			return true;
 		}
-		
-		
-		
+
 		/**
 		 * Called each time the action mode is shown.  Always called after on CreateAction
 		 */
@@ -136,12 +122,11 @@ public class AdvancedJokeList extends SherlockFragmentActivity implements androi
 		 */
 		@Override
 		public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-			//set ListView to have an OnItemLongClickListener to trigger the firing of
-			//the Action Mode Callback
-			Toast.makeText(getBaseContext(), "in callback", Toast.LENGTH_SHORT).show();
+			/*set ListView to have an OnItemLongClickListener to trigger the firing of
+			 * the Action Mode Callback*/
+			
 			switch(item.getItemId()) {
 				case R.id.menu_remove:
-					Toast.makeText(getBaseContext(), "clicked remove", Toast.LENGTH_SHORT).show();
 					//retrieve the Joke from the currently selected JokeView
 					Joke current_joke = current_JokeView.getJoke();
 					removeJoke(current_joke);
@@ -157,6 +142,7 @@ public class AdvancedJokeList extends SherlockFragmentActivity implements androi
 		 */
 		@Override
 		public void onDestroyActionMode(ActionMode mode) {
+			//Set Action Mode to terminate after the Remove item is selected
 			actionMode = null;
 			
 		}
@@ -164,9 +150,9 @@ public class AdvancedJokeList extends SherlockFragmentActivity implements androi
 
 	/** Refreshes the JokeViews and their corresponding values in the database automatically
 	 * Call this method whenever there are changes made to any of the jokes in the list, such as rating
-	 * being changed or a new joke being added*/
+	 * being changed or a new joke being added or joke being removed*/
 	public void fillData() {
-		//restart the CursorLoader
+		//restart the CursorLoader and refresh the cursor in JokeCursorAdapter
 		/*
 		 * restart loader: params: id (unique identifier for loader) args (optional args to supply loader) callback 
 		 * (interface of the LoaderManger will call to report about changes in the state of the loader
@@ -174,7 +160,7 @@ public class AdvancedJokeList extends SherlockFragmentActivity implements androi
 
 		this.getSupportLoaderManager().restartLoader(AdvancedJokeList.LOADER_ID, null, this);
 		
-		//set layout's adapter to m_jokeAdapter
+		//set layout's adapter to m_jokeAdapter because JokeCursorAdapter is refreshed and new 
 		this.m_vwJokeLayout.setAdapter(m_jokeAdapter);
 	}
 	
@@ -182,7 +168,6 @@ public class AdvancedJokeList extends SherlockFragmentActivity implements androi
 	 * Set ListView to have an OnItemLongClickListener
 	 */
 	protected void initLongClickListener() {
-		Toast.makeText(getBaseContext(), "in long click method", Toast.LENGTH_SHORT).show();
 		m_vwJokeLayout.requestFocus();
 		m_vwJokeLayout.setOnItemLongClickListener(new OnItemLongClickListener() {
 			@Override
@@ -191,12 +176,9 @@ public class AdvancedJokeList extends SherlockFragmentActivity implements androi
 				if (actionMode != null) {
 					return false;
 				}
-				Toast.makeText(getBaseContext(), "heard a long click", Toast.LENGTH_SHORT).show();
 				
-				//test
+				//for future reference
 				current_JokeView = (JokeView) view;
-/*				String joke_text = joke.getText();
-				Toast.makeText(getBaseContext(), "joke:  "  + joke_text, Toast.LENGTH_SHORT).show();*/
 
 				//Start the CAB using the ActionMode.Callback defined above
 				actionMode = startActionMode(callback);
@@ -210,7 +192,6 @@ public class AdvancedJokeList extends SherlockFragmentActivity implements androi
 	 */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		Log.w("CREATING", "i'm in onCreate");
 		super.onCreate(savedInstanceState);
 		this.initLayout();
 		
@@ -242,19 +223,22 @@ public class AdvancedJokeList extends SherlockFragmentActivity implements androi
 		 * This method will initialize whatever loader we want in the onCreateLoader() method, but need to specify that it is 
 		 * indeed a CursorLoader being loaded
 		 */
-		//this.getSupportLoaderManager().initLoader(LOADER_ID, null, this);
+		
 		//set m_vwJokeLayout's adapter to be m_jokeAdapter
 		this.m_vwJokeLayout.setAdapter(m_jokeAdapter);
 		
 		//restoring SharedPreference Data
+		
 		//retrieve the private SharedPreferences belong to this activity
 		SharedPreferences preferences = getPreferences(Activity.MODE_PRIVATE);
 		//retrieve the text that was saved
 		String retrieved_text = preferences.getString(SAVED_EDIT_TEXT, "");
-		Toast.makeText(getBaseContext(), "current text:  " + retrieved_text, Toast.LENGTH_SHORT).show();
 		//set text in m_vwJokeEditText to the text retrieved
 		this.m_vwJokeEditText.setText(retrieved_text);
 		this.m_jokeAdapter.notifyDataSetChanged();	
+		
+		//refresh so can "show all" with jokes from before
+		fillData();
 	}
 	
 	/**
@@ -267,8 +251,8 @@ public class AdvancedJokeList extends SherlockFragmentActivity implements androi
 			//set the filter for sorting and display the appropriate jokes
 			case R.id.submenu_like:
 				filter = AdvancedJokeList.FILTER_LIKE;
-				//Toast.makeText(this,"like jokes",Toast.LENGTH_SHORT).show();
-				updateFilteredJokes(filter);
+				//refresh 
+				fillData();
 				//change menu's text
 				onPrepareOptionsMenu(m_vwMenu);
 				this.m_jokeAdapter.notifyDataSetChanged();				
@@ -276,21 +260,21 @@ public class AdvancedJokeList extends SherlockFragmentActivity implements androi
 
 			case R.id.submenu_dislike:
 				filter = AdvancedJokeList.FILTER_DISLIKE;
-				updateFilteredJokes(filter);
+				fillData();
 				onPrepareOptionsMenu(m_vwMenu);
 				this.m_jokeAdapter.notifyDataSetChanged();	
 				return true;
 				
 			case R.id.submenu_unrated:
 				filter = AdvancedJokeList.FILTER_UNRATED;
-				updateFilteredJokes(filter);	
+				fillData();
 				onPrepareOptionsMenu(m_vwMenu);
 				this.m_jokeAdapter.notifyDataSetChanged();	
 				return true;
 				
 			case R.id.submenu_show_all:
 				filter = AdvancedJokeList.FILTER_SHOW_ALL;
-				updateFilteredJokes(filter);
+				fillData();
 				onPrepareOptionsMenu(m_vwMenu);
 				this.m_jokeAdapter.notifyDataSetChanged();
 				return true;
@@ -305,15 +289,6 @@ public class AdvancedJokeList extends SherlockFragmentActivity implements androi
 	protected void onRestoreInstanceState(Bundle savedInstanceState) {
 		//call super version to ensure that other UI state is preserved as well
 		super.onRestoreInstanceState(savedInstanceState);
-		//check to make sure savedInstanceState isn't null
-		assert savedInstanceState != null;
-		//check to make sure saved filter state is in the Bundle
-		assert savedInstanceState.containsKey(SAVED_FILTER_VALUE);
-		//retrieve the value of the filter from savedInstanceState
-		int saved_filter = savedInstanceState.getInt(SAVED_FILTER_VALUE);
-		//re-filter the joke list and notify adapter
-		updateFilteredJokes(saved_filter);			
-		this.m_jokeAdapter.notifyDataSetChanged();	
 	}
 	/**
 	 * Create the filter menu
@@ -358,15 +333,17 @@ public class AdvancedJokeList extends SherlockFragmentActivity implements androi
 	 * list.
 	 */
 	protected void initAddJokeListeners() {
-		//setup the onClickListener for the "Add Joke" button.  
-		//pass in reference to an Anonymous Inner Class that implements the OnClickListener interface
-		//anonymous inner class = one-time use class that implements some interface
-		//you declare the class and instantiate it in one motion
+		/**
+		 * setup the onClickListener for the "Add Joke" button.  
+		 * pass in reference to an Anonymous Inner Class that implements the OnClickListener interface
+		 * anonymous inner class = one-time use class that implements some interface
+		 * you declare the class and instantiate it in one motion*/
 		
 		m_vwJokeButton.setOnClickListener(new OnClickListener() {
 			  public void onClick(View view) {
 				  //retrieve text entered by user
 				  String input_text = m_vwJokeEditText.getText().toString();
+
 				  Joke joke = new Joke(input_text, m_strAuthorName);
 				  //clear the text in EditText
 				  m_vwJokeEditText.setText("");
@@ -409,7 +386,6 @@ public class AdvancedJokeList extends SherlockFragmentActivity implements androi
 		//always call the superclass method first
 		super.onPause();
 		//retrieve the private SharedPreferences belonging to this Activity
-		//idk if this is right
 		SharedPreferences preferences = getPreferences(Activity.MODE_PRIVATE);
 	
 		//create a new Editor for these preferences, through which you can make modifications
@@ -418,21 +394,10 @@ public class AdvancedJokeList extends SherlockFragmentActivity implements androi
 		
 		//store the text in m_vwJokeEditText in the SharedPreferences
 		String text = this.m_vwJokeEditText.getText().toString();
-		Toast.makeText(getBaseContext(), "current text:  " + text, Toast.LENGTH_SHORT).show();
 		editor.putString(AdvancedJokeList.SAVED_EDIT_TEXT, text);
-		//need to call this to have any changes performed in the Editor show up in the 
-		//Shared preferences
+		/*need to call this to have any changes performed in the Editor show up in the 
+		* Shared preferences*/
 		editor.commit();
-	}
-	 /**
-	  * Sets the filtered array of jokes based on the filter passed in.
-	  * @param filter the filter for which the jokes should be filtered by
-	  */
-	protected void updateFilteredJokes (int filter) {
-		//set the filter value
-		//but do i need this since filter is set in onOptions clicked?
-		//call fillData() to complete the refreshing cycle
-		fillData();
 	}
 	
 	/**
@@ -470,7 +435,6 @@ public class AdvancedJokeList extends SherlockFragmentActivity implements androi
 	
 		//get the name for the action bar based on the current filter
 		String name = getMenuTitleChange();
-		Toast.makeText(getBaseContext(), "current filter name:  " + name, Toast.LENGTH_SHORT).show();
 		//set the title text of the filter
 		filter.setTitle(name);
 		
@@ -486,20 +450,20 @@ public class AdvancedJokeList extends SherlockFragmentActivity implements androi
 	/**
 	 * Method used for encapsulating the logic necessary to properly add a new
 	 * Joke to m_arrJokeList, and display it on screen.
-	 * 
-	 * @param joke
-	 *            The Joke to add to list of Jokes.
+	 * @param joke The Joke to add to list of Jokes.
 	 */
 	protected void addJoke(Joke joke) {
 		Uri uri;
 		uri = Uri.withAppendedPath(JokeContentProvider.CONTENT_URI, "/jokes/" + joke.getID());
 		ContentValues contents = new ContentValues();
-		contents.put("joke_text", joke.getJoke());
-		contents.put("joke_author", joke.getAuthor());
-		contents.put("joke_rating", joke.getRating());
+		contents.put(JokeTable.JOKE_TEXT, joke.getJoke());
+		contents.put(JokeTable.JOKE_AUTHOR, joke.getAuthor());
+		contents.put(JokeTable.JOKE_RATING, joke.getRating());
+		
+		//put the contents in the database for that particular joke
+		Uri newUri = this.getContentResolver().insert(uri, contents);
 		
 		//set joke ID to the return value of insertion call (insert returns the ID of the newly inserted row
-		Uri newUri = this.getContentResolver().insert(uri, contents);
 		Long automated_joke_id = Long.valueOf(newUri.getLastPathSegment());
 		joke.setID(automated_joke_id);
 		
@@ -590,18 +554,25 @@ public class AdvancedJokeList extends SherlockFragmentActivity implements androi
 		Uri uri;
 		//does joke.getID() have to be an int?
 		uri = Uri.withAppendedPath(JokeContentProvider.CONTENT_URI, "/jokes/" + joke.getID());
+		
 		//put joke text, rating and author inside of ContentValues, will be added to database for designated joke
 		ContentValues contents = new ContentValues();
-		contents.put("joke_text", joke.getJoke());
-		contents.put("joke_rating",joke.getRating());
-		contents.put("joke_author", joke.getAuthor());
-	
+		contents.put(JokeTable.JOKE_TEXT, joke.getJoke());
+		contents.put(JokeTable.JOKE_RATING,joke.getRating());
+		contents.put(JokeTable.JOKE_AUTHOR, joke.getAuthor());
+
+
+		//update the database with the changed joke
 		this.getContentResolver().update(uri, contents, null, null);
 		
-		//need to set the listener in the adapter to null
-		//otherwise app will loop definitely due to the OnJokeChangeListener both receiving news of a change and sending one itself
+		/** 
+		 * need to set the listener in the adapter to null
+		 * otherwise app will loop definitely due to the OnJokeChangeListener both 
+		 * receiving news of a change and sending one itself*/
+		
 		this.m_jokeAdapter.setOnJokeChangeListener(null);
 		
+		//refreshes everything
 		this.fillData();
 	}
 	
@@ -615,6 +586,8 @@ public class AdvancedJokeList extends SherlockFragmentActivity implements androi
 		
 		this.getContentResolver().delete(uri, null, null);
 		
+		//refresh everything
+		fillData();
 	}
 
 }

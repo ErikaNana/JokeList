@@ -62,7 +62,8 @@ public class JokeCursorAdapter extends android.support.v4.widget.CursorAdapter {
 		String joke_text = cursor.getString(JokeTable.JOKE_COL_TEXT);
 		int joke_rating = cursor.getInt(JokeTable.JOKE_COL_RATING);
 		String joke_author = cursor.getString(JokeTable.JOKE_COL_AUTHOR);
-		Joke joke = new Joke(joke_text,joke_author,joke_rating);
+		long joke_id = cursor.getLong(JokeTable.JOKE_COL_ID);
+		Joke joke = new Joke(joke_text,joke_author,joke_rating,joke_id);
 		
 		// the view's on JokeChangeListener to null to avoid refreshing the data when the joke data
 		//is not actually refreshing
@@ -89,7 +90,9 @@ public class JokeCursorAdapter extends android.support.v4.widget.CursorAdapter {
 		String joke_text = cursor.getString(JokeTable.JOKE_COL_TEXT);
 		int joke_rating = cursor.getInt(JokeTable.JOKE_COL_RATING);
 		String joke_author = cursor.getString(JokeTable.JOKE_COL_AUTHOR);
-		Joke joke = new Joke(joke_text,joke_author,joke_rating);
+		long joke_id = cursor.getLong(JokeTable.JOKE_COL_ID);
+		
+		Joke joke = new Joke(joke_text,joke_author,joke_rating,joke_id);
 		
 		//make a new JokeView
 		JokeView joke_view = new JokeView(context,joke);

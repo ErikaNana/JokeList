@@ -1,7 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="edu.calpoly.android.lab4"
     android:versionCode="1"
-    android:versionName="1.0" >
+    android:versionName="1.0"
+    android:installLocation="auto" >
 
     <uses-sdk
         android:minSdkVersion="10"
@@ -21,7 +22,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-     <provider android:name="edu.calpoly.android.lab4_key.JokeContentProvider"
+     <provider android:name="edu.calpoly.android.lab4.JokeContentProvider"
           android:authorities="edu.calpoly.android.lab4.contentprovider"
           android:exported="false">
 	</provider>

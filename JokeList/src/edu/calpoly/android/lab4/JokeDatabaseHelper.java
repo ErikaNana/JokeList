@@ -38,7 +38,7 @@ public class JokeDatabaseHelper extends android.database.sqlite.SQLiteOpenHelper
 	@Override
 	public void onCreate(SQLiteDatabase db) {
 		//call the helper method from JokeTable
-		Log.w("CREATING", "i'm in onCreate");
+		Log.w("CREATING", "i'm in onCreate for database");
 		JokeTable.onCreate(db);
 	}
 

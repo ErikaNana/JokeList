@@ -3,9 +3,6 @@ package edu.calpoly.android.lab4;
 import java.util.Arrays;
 import java.util.HashSet;
 
-import edu.calpoly.android.lab4.JokeDatabaseHelper;
-import edu.calpoly.android.lab4.JokeTable;
-
 import android.content.ContentProvider;
 import android.content.ContentValues;
 import android.content.UriMatcher;
@@ -13,7 +10,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
-import android.util.Log;
 
 /**
  * Class that provides content from a SQLite database to the application.
@@ -68,10 +64,9 @@ public class JokeContentProvider extends ContentProvider {
 	
 	@Override
 	public boolean onCreate() {
-		Log.w("CREATING", "i'm in onCreate");
 		// initialize database class variable as a new JokeDatabaseHelper
 		database = new JokeDatabaseHelper(getContext(), JokeDatabaseHelper.DATABASE_NAME, null, JokeDatabaseHelper.DATABASE_VERSION);
-		return false;
+		return true;
 	}
 
 	/**
@@ -146,7 +141,6 @@ public class JokeContentProvider extends ContentProvider {
 	 /** Set the cursor to automatically alert listeners (ListView) for content/view refreshing. */
 	 cursor.setNotificationUri(getContext().getContentResolver(), uri);
 	 
-	 db.close();
 	 return cursor;
 	 }
 	
@@ -157,7 +151,7 @@ public class JokeContentProvider extends ContentProvider {
 	}
 	
 	/**
-	 * Inserts a joke into the joke table. Given a specific URI that contains a
+	 * Inserts a joke into the joke table. Given a specific URI tha contains a
 	 * joke and the values of that joke, writes a new row in the table filled
 	 * with that joke's information and gives the joke a new ID, then returns a URI
 	 * containing the ID of the inserted joke.<br><br>
@@ -205,7 +199,6 @@ public class JokeContentProvider extends ContentProvider {
 		default:
 			throw new IllegalArgumentException("Unknown URI: " + uri);
 		}
-		sqlDB.close();
 		/*set the ContentResolver to notify components attached to the joke table
 		this refreshes the ListView once we give it a CursorAdapter and bind its JokeViews to a Cursor
 		This will automatically go off because we just made a change to the joke table (insert new joke)*/
@@ -261,7 +254,6 @@ public class JokeContentProvider extends ContentProvider {
 		if (rows_deleted > 0) {
 			getContext().getContentResolver().notifyChange(uri, null);
 		}
-		db.close();
 		//return the number of rows delete
 		return rows_deleted;
 	}
@@ -304,7 +296,6 @@ public class JokeContentProvider extends ContentProvider {
 		default:
 			throw new IllegalArgumentException("Unknown URI: " + uri);
 		}
-		
 		return 0;
 	}
 

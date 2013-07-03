@@ -1,6 +1,6 @@
 package edu.calpoly.android.lab4;
 
-import edu.calpoly.android.lab4.R;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.widget.LinearLayout;
@@ -9,9 +9,8 @@ import android.widget.RadioGroup;
 import android.widget.RadioGroup.OnCheckedChangeListener;
 import android.widget.TextView;
 
-//RadioGroup.OnCheckedChangeListener
-//interface definition for a callback to be invoked when the checked radio button changed
-//in the group
+
+@SuppressLint("ViewConstructor")
 public class JokeView extends LinearLayout implements OnCheckedChangeListener{
 
 	/** Radio buttons for liking or disliking a joke. */
@@ -43,11 +42,12 @@ public class JokeView extends LinearLayout implements OnCheckedChangeListener{
 		super(context);
 
 		LayoutInflater inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-		//inflating joke_view.xml
-		//after layout is inflated, want this JokeView object to be the root ViewGroup of the
-		//inflated layout.  Instead of returning an inflated hierarchy of View, this JokeView
-		//object will become the root of that hierarchy
-		inflater.inflate(R.layout.joke_view, this, true);
+		/** 
+		 * inflating joke_view.xml
+		 * after layout is inflated, want this JokeView object to be the root ViewGroup of the
+		 * inflated layout.  Instead of returning an inflated hierarchy of View, this JokeView
+		 * object will become the root of that hierarchy */
+		 inflater.inflate(R.layout.joke_view, this, true);
 		
 		//initialize all the View component member variables
 		this.m_vwLikeButton = (RadioButton) findViewById(R.id.likeButton);
@@ -77,15 +77,16 @@ public class JokeView extends LinearLayout implements OnCheckedChangeListener{
 		//update m_vwJokeText with the text for the new joke
 		this.m_vwJokeText.setText(joke.getJoke());
 		
-		//by ellipsing the joke TextView and making the rating RadioGroup disappear we have
-		//changed the size of the JokeView.  This has caused the JokeView to become
-		//invalidated.  Whenever a view becomes invalidated it should request to be laid out
-		//again.  Failing to make this call will result in the view not being updated
-		//properly.
+		/**
+		 * by ellipsing the joke TextView and making the rating RadioGroup disappear we have
+		 * changed the size of the JokeView.  This has caused the JokeView to become
+		 * invalidated.  Whenever a view becomes invalidated it should request to be laid out
+		 * again.  Failing to make this call will result in the view not being updated
+		 * properly.*/
 		this.requestLayout();
 
-		//setting the checked state to true on the appropriate RadioButton to reflect the
-		//rating for the new joke
+		/* setting the checked state to true on the appropriate RadioButton to reflect the
+		rating for the new joke*/
 		int rating = joke.getRating();
 		
 		switch (rating){
@@ -107,6 +108,11 @@ public class JokeView extends LinearLayout implements OnCheckedChangeListener{
 			}
 		}
 	}
+	/** 
+	 * RadioGroup.OnCheckedChangeListener
+	 * interface definition for a callback to be invoked when the checked radio button changed
+	 * in the group
+	 */
 
 	@Override
 	public void onCheckedChanged(RadioGroup group, int checkedId) {
@@ -114,14 +120,16 @@ public class JokeView extends LinearLayout implements OnCheckedChangeListener{
 			//if like button is checked, change the rating of the joke in JokeView
 			if(checkedId == R.id.likeButton) {
 				this.m_joke.setRating(Joke.LIKE);
+				//must notify the OnJokeChangeListener() whenever change any of the underlying joke data 
+				this.notifyOnJokeChangeListener();
 			}
 			//if dislike button is checked, change the rating of the joke in JokeView
 			if(checkedId == R.id.dislikeButton) {
 				this.m_joke.setRating(Joke.DISLIKE);
+				//must notify the OnJokeChangeListener() whenever change any of the underlying joke data 
+				this.notifyOnJokeChangeListener();
 			}
 		}
-		//must notify the OnJokeChangeListener() whenever change any of the underlying joke data 
-		this.notifyOnJokeChangeListener();
 		
 	}
 	/**
@@ -152,8 +160,7 @@ public class JokeView extends LinearLayout implements OnCheckedChangeListener{
 	 */
 	protected void notifyOnJokeChangeListener() {
 		if (this.m_onJokeChangeListener != null) {
-			//idk if this is right
-			this.m_onJokeChangeListener.notifyAll();
+			this.m_onJokeChangeListener.onJokeChanged(this, this.m_joke);
 		}
 	}
 
@@ -173,8 +180,10 @@ public class JokeView extends LinearLayout implements OnCheckedChangeListener{
 		 */
 		public void onJokeChanged(JokeView view, Joke joke);
 	}
+	
+	//Helper Methods
+	
 	/**
-	 * Helper method
 	 * @return text of the joke
 	 */
 	public String getText() {
@@ -182,7 +191,6 @@ public class JokeView extends LinearLayout implements OnCheckedChangeListener{
 	}
 	
 	/**
-	 * Helper method
 	 * @return actual joke
 	 */
 	public Joke getJoke() {

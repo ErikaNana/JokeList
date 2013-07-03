@@ -1,5 +1,6 @@
 package edu.calpoly.android.lab4;
 
+
 /**
  * This class encapsulates the data pertaining to a Joke.
  */
@@ -33,12 +34,12 @@ public class Joke {
 	 */
 	public Joke() {
 		this.m_strJoke = "";
-		this.m_strAuthorName = "";
+		this.m_strAuthorName = "defaulto";
 		this.m_nRating = Joke.UNRATED;
 		this.m_nID = 0;
 	}
 
-	/**
+	/*
 	 * Initializes with the joke and author strings passed in and the default
 	 * rating of UNRATED.
 	 * 
@@ -50,7 +51,7 @@ public class Joke {
 	 */
 	public Joke(String strJoke, String strAuthor) {
 		this.m_strJoke = strJoke;
-		this.m_strAuthorName = strAuthor;
+		this.m_strAuthorName = "defaulto";
 		this.m_nRating = Joke.UNRATED;
 		this.m_nID = 0;
 	}
